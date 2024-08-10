@@ -1,0 +1,129 @@
+import { MongoClient, Collection, Db } from 'mongodb';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// MongoDB connection URL and database name
+const CONNECTION_URL = process.env.MONGO_CONNECTION_STRING as string;
+const currentDir = dirname(fileURLToPath(import.meta.url));
+const dbName = currentDir.includes('sw33t') ? 'TestBot' : 'Oziman';
+
+// Create a new MongoClient
+const client = new MongoClient(CONNECTION_URL);
+
+// Collections mapping
+const collections: Record<string, Collection> = {};
+
+export async function initializeDatabase() {
+	try {
+		await client.connect();
+		const db: Db = client.db(dbName);
+		collections.giveaways = db.collection('giveaways');
+		collections.investments = db.collection('investments');
+		collections.temp_users = db.collection('temp_users');
+		collections.vip_videos = db.collection('vip_videos');
+		collections.private_dm = db.collection('private_dm');
+		collections.tickets = db.collection('tickets');
+		collections.config = db.collection('config');
+		collections.polls = db.collection('polls');
+		collections.polls_answers = db.collection('polls_answers');
+		collections.investments_trackers = db.collection('investments_trackers');
+		collections.payslips = db.collection('payslips');
+		collections.daily_login = db.collection('daily_login');
+		collections.questions = db.collection('questions');
+	} catch (error) {
+		console.error('Error connecting to MongoDB', error);
+	}
+}
+
+const addDataToDatabase = async (collectionName: string, data: any) => {
+	const collection = collections[collectionName];
+	await collection.insertOne(data);
+};
+
+const deleteDataFromDatabase = async (collectionName: string, data: any) => {
+	const collection = collections[collectionName];
+	await collection.deleteOne(data);
+};
+
+const bulkDeleteDataFromDatabase = async (collectionName: string, data: any) => {
+	const collection = collections[collectionName];
+	await collection.deleteMany(data);
+};
+
+const checkIfDataInDatabase = async (collectionName: string, data: any) => {
+	const collection = collections[collectionName];
+	const result = await collection.findOne(data);
+	return result !== null;
+};
+
+const updateOneData = async (collectionName: string, data: any, update: any) => {
+	const collection = collections[collectionName];
+	await collection.updateOne(data, { $set: update });
+};
+
+const getDataFromDatabase = async (collectionName: string, data: any) => {
+	const collection = collections[collectionName];
+	if (await checkIfDataInDatabase(collectionName, data)) {
+		return await collection.findOne(data);
+	}
+	return null;
+};
+
+const getAllDataFromDatabase = async (collectionName: string) => {
+	const collection = collections[collectionName];
+	const data = await collection.find().toArray();
+	return data;
+};
+
+const getAllDataWithSearchInDatabase = async (collectionName: string, data: any) => {
+	const collection = collections[collectionName];
+	const searchResults = await collection.find(data).toArray();
+	return searchResults;
+};
+
+export const getConfigFromDatabase = async () => {
+	const collection = collections.config;
+	const data = await collection.find().toArray();
+	const result = data[0];
+	return result;
+};
+
+export class DatabaseHandler {
+	collectionName: string;
+
+	constructor(collectionName: string) {
+		this.collectionName = collectionName;
+	}
+
+	async addData(data: any) {
+		await addDataToDatabase(this.collectionName, data);
+	}
+
+	async getData(data: any) {
+		return await getDataFromDatabase(this.collectionName, data);
+	}
+
+	async getAllData() {
+		return await getAllDataFromDatabase(this.collectionName);
+	}
+
+	async checkIfExists(data: any) {
+		return await checkIfDataInDatabase(this.collectionName, data);
+	}
+
+	async deleteData(data: any) {
+		await deleteDataFromDatabase(this.collectionName, data);
+	}
+
+	async bulkDeleteData(data: any) {
+		await bulkDeleteDataFromDatabase(this.collectionName, data);
+	}
+
+	async getAllDataWithSearch(data: any) {
+		return await getAllDataWithSearchInDatabase(this.collectionName, data);
+	}
+
+	async updateOneData(data: any, update: any) {
+		await updateOneData(this.collectionName, data, update);
+	}
+}
