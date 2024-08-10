@@ -2,7 +2,7 @@ import { Message, PartialMessage } from 'discord.js';
 import { withErrorHandling } from '../utils/errorHandler';
 import { client, config } from '../index';
 import { isUserOwner, sendMessage } from '../utils/helperFunctions';
-import { messageDeleteEmbed, messageEditEmbed } from '../components/embedsBuilder';
+import { messageDeleteEmbed, messageEditEmbed } from '../components/logsEmbed';
 
 export async function setupMessagesEvents() {
 	client.on(

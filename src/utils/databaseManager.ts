@@ -150,7 +150,7 @@ export const getConfigFromDatabase = async (): Promise<Config> => {
 };
 
 
-export class DatabaseHandler {
+class DatabaseHandler {
 	collectionName: string;
 
 	constructor(collectionName: string) {
@@ -189,3 +189,25 @@ export class DatabaseHandler {
 		await updateOneData(this.collectionName, data, update);
 	}
 }
+
+class DatabaseManagerClass {
+    ticketsHandler = new DatabaseHandler('tickets')
+    async getAllTickets() {
+        return await this.ticketsHandler.getAllData()
+    }
+    async createNewTicket(userID: string, channelID: string) {
+        await this.ticketsHandler.addData({ 'user': userID, 'channel': channelID })
+    }
+    async checkIfTicketExists(userID: string) {
+        return await this.ticketsHandler.checkIfExists({ 'user': userID })
+    }
+    async getTicketChannel(userID: string) {
+        const data = await this.ticketsHandler.getData({ 'user': userID })
+        return data?.channel
+    }
+    async deleteTicket(channelID: string) {
+        await this.ticketsHandler.deleteData({ 'channel': channelID })
+    }
+}
+
+export const dbManager = new DatabaseManagerClass()

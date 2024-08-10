@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { Client } from 'discord.js'
-import { setupEvents } from './events/registerEvents'
 import { getConfigFromDatabase, initializeDatabase } from './utils/databaseManager';
+import { setupEvents } from './events/loadEvents';
 
 export const client = new Client({
     intents: ['Guilds', 'GuildMembers', 'GuildMessages', 'MessageContent']
@@ -10,6 +10,6 @@ export const client = new Client({
 await initializeDatabase();
 export const config = await getConfigFromDatabase();
 
-await setupEvents()
+await setupEvents();
 
-client.login(config.BOT.Token)
+client.login(config.BOT.Token);

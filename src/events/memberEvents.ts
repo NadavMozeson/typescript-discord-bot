@@ -1,5 +1,5 @@
 import { Guild, GuildMember, PartialGuildMember, Role } from 'discord.js';
-import { memberBanEmbed, memberUnbanEmbed, memberTimeoutEmbed } from '../components/embedsBuilder';
+import { memberBanEmbed, memberUnbanEmbed, memberTimeoutEmbed } from '../components/logsEmbed';
 import { withErrorHandling } from '../utils/errorHandler';
 import { config } from '../index';
 import { client } from '../index';
