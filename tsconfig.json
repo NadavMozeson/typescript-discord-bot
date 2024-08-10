@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+      "target": "es2017",
+      "module": "es2022",
+      "moduleResolution": "node",
+      "strict": true,
+      "noImplicitAny": true,
+      "declaration": false,
+      "skipLibCheck": true,
+      "strictNullChecks": true,
+      "resolveJsonModule": true,
+      "outDir": "dist"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}
