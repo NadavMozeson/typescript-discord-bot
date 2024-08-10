@@ -1,4 +1,4 @@
-import { EmbedBuilder, Guild, Message, User, TextChannel, NewsChannel, GuildMember } from 'discord.js';
+import { EmbedBuilder, Guild, Message, User, TextChannel, NewsChannel, GuildMember, PartialMessage } from 'discord.js';
 import { withErrorHandling } from '../utils/errorHandler.js';
 import { config, client } from '../index.js';
 
@@ -15,9 +15,14 @@ const getSafeURL = (url: string | null | undefined): string | undefined => {
 	return url ?? undefined;
 };
 
-export const messageEditEmbed = withErrorHandling(async (before: Message, after: Message) => {
+export const messageEditEmbed = withErrorHandling(async (before: Message | PartialMessage, after: Message | PartialMessage) => {
 	if (!after.guild) {
 		console.warn('Message edit event from non-guild context');
+		return;
+	}
+    
+    if (!after.author) {
+		console.warn('Message edit event from non-user context');
 		return;
 	}
 
@@ -40,9 +45,14 @@ export const messageEditEmbed = withErrorHandling(async (before: Message, after:
 	await sendEmbed(config.SERVER.CHANNELS.LOG.Main, embed);
 });
 
-export const messageDeleteEmbed = withErrorHandling(async (message: Message) => {
+export const messageDeleteEmbed = withErrorHandling(async (message: Message | PartialMessage) => {
 	if (!message.guild) {
 		console.warn('Message delete event from non-guild context');
+		return;
+	}
+        
+    if (!message.author) {
+		console.warn('Message edit event from non-user context');
 		return;
 	}
 
