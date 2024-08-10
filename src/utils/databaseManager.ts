@@ -1,4 +1,4 @@
-import { MongoClient, Collection, Db } from 'mongodb';
+import { MongoClient, Collection, Db, WithId, Document } from 'mongodb';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -81,12 +81,74 @@ const getAllDataWithSearchInDatabase = async (collectionName: string, data: any)
 	return searchResults;
 };
 
-export const getConfigFromDatabase = async () => {
-	const collection = collections.config;
-	const data = await collection.find().toArray();
-	const result = data[0];
-	return result;
+interface Config {
+    _id: {
+      $oid: string;
+    };
+    BOT: {
+      Prefix: string;
+      Token: string;
+    };
+    SERVER: {
+      INFO: {
+        ServerId: string;
+        Owners: string[];
+        TicketIdle: number;
+      };
+      ROLES: {
+        Member: string;
+        everyone: string;
+        VIP: string;
+        Support: string;
+        Manager: string;
+      };
+      CHANNELS: {
+        LOG: {
+          Main: string;
+          SuggestLog: string;
+          StaffForms: string;
+          EditorForms: string;
+        };
+        FirstExit: {
+          everyone: string;
+          VIP: string;
+        };
+        STATS: {
+          StatsYouTube: string;
+          StatsInstagram: number;
+          StatsDiscord: string;
+          StatsTemp: number;
+          StatsVIP: number;
+        };
+        Ticket: string;
+        Profit: string;
+        Managment: string;
+        Suggest: string;
+        TeamRating: string;
+        DailyLogin: string;
+      };
+    };
+}
+
+const isConfig = (data: any): data is Config => {
+  return data && typeof data === 'object' &&
+    typeof data.BOT === 'object' &&
+    typeof data.SERVER === 'object';
 };
+
+export const getConfigFromDatabase = async (): Promise<Config> => {
+  const collection = collections.config;
+  const data: WithId<Document>[] = await collection.find().toArray();
+  
+  const result = data[0];
+
+  if (!isConfig(result)) {
+    throw new Error('Invalid configuration data');
+  }
+
+  return result;
+};
+
 
 export class DatabaseHandler {
 	collectionName: string;

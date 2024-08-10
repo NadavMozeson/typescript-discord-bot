@@ -1,8 +1,7 @@
-import { EmbedBuilder, Guild, Message, User, TextChannel, NewsChannel } from 'discord.js';
+import { EmbedBuilder, Guild, Message, User, TextChannel, NewsChannel, GuildMember } from 'discord.js';
 import { withErrorHandling } from '../utils/errorHandler.js';
 import { config, client } from '../index.js';
 
-// Function to send embed messages to the specified channel
 const sendEmbed = async (channelId: string, embed: EmbedBuilder) => {
 	const channel = await client.channels.fetch(channelId)
 	if (channel instanceof TextChannel || channel instanceof NewsChannel) {
@@ -12,12 +11,10 @@ const sendEmbed = async (channelId: string, embed: EmbedBuilder) => {
 	}
 };
 
-// Helper function to safely get a string or undefined from possibly null values
 const getSafeURL = (url: string | null | undefined): string | undefined => {
 	return url ?? undefined;
 };
 
-// Embed for message edits
 export const messageEditEmbed = withErrorHandling(async (before: Message, after: Message) => {
 	if (!after.guild) {
 		console.warn('Message edit event from non-guild context');
@@ -43,7 +40,6 @@ export const messageEditEmbed = withErrorHandling(async (before: Message, after:
 	await sendEmbed(config.SERVER.CHANNELS.LOG.Main, embed);
 });
 
-// Embed for message deletions
 export const messageDeleteEmbed = withErrorHandling(async (message: Message) => {
 	if (!message.guild) {
 		console.warn('Message delete event from non-guild context');
@@ -72,40 +68,39 @@ export const messageDeleteEmbed = withErrorHandling(async (message: Message) => 
 	await sendEmbed(config.SERVER.CHANNELS.LOG.Main, embed);
 });
 
-// Embed for member bans
-export const memberBanEmbed = withErrorHandling(async (guild: Guild, user: User) => {
-	const embed = new EmbedBuilder()
+export const memberBanEmbed = withErrorHandling(async (guild: Guild, user: { bot: boolean; id: string; }) => {
+	const userData = await client.users.fetch(user.id)
+    const embed = new EmbedBuilder()
 		.setTitle('⛔ משתמש קיבל באן! ⛔')
 		.setColor('#fe4848')
 		.setTimestamp()
 		.setFooter({ text: guild.name, iconURL: getSafeURL(guild.iconURL()) })
-		.addFields({ name: '👤 משתמש 👤', value: `${user}` });
+		.addFields({ name: '👤 משתמש 👤', value: `${userData}` });
 
-	if (user.displayAvatarURL()) {
-		embed.setThumbnail(user.displayAvatarURL());
+	if (userData.avatarURL()) {
+		embed.setThumbnail(userData.avatarURL());
 	}
 
 	await sendEmbed(config.SERVER.CHANNELS.LOG.Main, embed);
 });
 
-// Embed for member unbans
-export const memberUnbanEmbed = withErrorHandling(async (guild: Guild, user: User) => {
+export const memberUnbanEmbed = withErrorHandling(async (guild: Guild, user: { bot: boolean; id: string; }) => {
+    const userData = await client.users.fetch(user.id)
 	const embed = new EmbedBuilder()
 		.setTitle('✅ ירד למשתמש באן ✅')
 		.setColor('#fe4848')
 		.setTimestamp()
 		.setFooter({ text: guild.name, iconURL: getSafeURL(guild.iconURL()) })
-		.addFields({ name: '👤 משתמש 👤', value: `${user}` });
+		.addFields({ name: '👤 משתמש 👤', value: `${userData}` });
 
-	if (user.displayAvatarURL()) {
-		embed.setThumbnail(user.displayAvatarURL());
+	if (userData.avatarURL()) {
+		embed.setThumbnail(userData.avatarURL());
 	}
 
 	await sendEmbed(config.SERVER.CHANNELS.LOG.Main, embed);
 });
 
-// Embed for member timeouts
-export const memberTimeoutEmbed = withErrorHandling(async (guild: Guild, user: User) => {
+export const memberTimeoutEmbed = withErrorHandling(async (guild: Guild, user: GuildMember) => {
 	const embed = new EmbedBuilder()
 		.setTitle('⌛ משתמש קיבל טיימאוט ⌛️')
 		.setColor('#fb7979')

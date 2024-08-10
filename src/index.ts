@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { Client } from 'discord.js'
-import { setupBasicEvents } from './events/basicEvents'
+import { setupEvents } from './events/registerEvents'
 import { getConfigFromDatabase, initializeDatabase } from './utils/databaseManager';
 
 export const client = new Client({
@@ -10,6 +10,6 @@ export const client = new Client({
 await initializeDatabase();
 export const config = await getConfigFromDatabase();
 
-await setupBasicEvents()
+await setupEvents()
 
 client.login(config.BOT.Token)

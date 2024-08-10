@@ -1,10 +1,9 @@
-import { Guild, GuildMember, Role } from 'discord.js';
+import { Guild, GuildMember, PartialGuildMember, Role } from 'discord.js';
 import { memberBanEmbed, memberUnbanEmbed, memberTimeoutEmbed } from '../components/embedsBuilder';
 import { withErrorHandling } from '../utils/errorHandler';
 import { config } from '../index';
 import { client } from '../index';
 
-// TypeScript definitions for the event handlers
 type GuildBanEvent = {
   user: { bot: boolean; id: string; };
   guild: Guild;
@@ -45,7 +44,7 @@ export async function setupMemberEvents() {
 
   client.on(
     'guildMemberUpdate',
-    withErrorHandling(async (oldMember: GuildMember, newMember: GuildMember) => {
+    withErrorHandling(async (oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) => {
       if (oldMember.communicationDisabledUntil !== newMember.communicationDisabledUntil) {
         if (newMember.communicationDisabledUntil) {
           await memberTimeoutEmbed(newMember.guild, newMember);
