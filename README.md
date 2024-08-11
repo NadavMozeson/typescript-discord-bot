@@ -31,7 +31,7 @@ To develop and run this Discord bot, you'll need the following software installe
    npm -v
    ```
 
-### **TypeScript** (version 5.x or later)
+### **TypeScript**
 
 - **Install TypeScript Globally:**
 
