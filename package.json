@@ -13,13 +13,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.7.3",
+    "cheerio": "^1.0.0",
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
     "mongodb": "^6.8.0",
+    "puppeteer": "^23.0.2",
     "typescript": "^5.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.2.0",
+    "@types/puppeteer": "^7.0.4",
     "tsx": "^4.17.0"
   }
 }

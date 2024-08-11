@@ -1,4 +1,4 @@
-import { MongoClient, Collection, Db, WithId, Document } from 'mongodb';
+import { MongoClient, Collection, Db, WithId, Document, IntegerType } from 'mongodb';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -230,9 +230,29 @@ class PrivateChatManager {
   }
 }
 
+class InvestmentsManager {
+  investmentsHandler = new DatabaseHandler('investments')
+  async createNewInvestment(name:string, link: string, nation: string, rating: string, version: string, risk: string, channel: string, console_price: string, pc_price: string, user: string, msg: string ) {
+      await this.investmentsHandler.addData({
+        "name": name,
+        "nation": nation,
+        "rating": rating,
+        "link": link,
+        "risk": risk,
+        "channel": channel,
+        "console price": console_price,
+        "pc price": pc_price,
+        "user": user,
+        "msg": msg,
+        "version": version
+      })
+  }
+}
+
 class DatabaseManagerClass {
     Tickets = new TicketsManager()
     DM = new PrivateChatManager()
+    Investments = new InvestmentsManager()
 }
 
 export const dbManager = new DatabaseManagerClass()

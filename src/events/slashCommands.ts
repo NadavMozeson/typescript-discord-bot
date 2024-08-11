@@ -4,6 +4,7 @@ import { client } from "../index"
 export async function setupSlashCommands() {
     if (client.application){
         await client.application.commands.create(OpenDM)
+        await client.application.commands.create(Investment)
     }
 }
 
@@ -24,3 +25,29 @@ const OpenDM = new SlashCommandBuilder()
                 { name: 'סגור צאט', value: 'close' }
             )
     )
+
+const Investment = new SlashCommandBuilder()
+    .setName('investment')
+    .setDescription('פרסום השקעה חדשה בצאט הנוכחי')
+    .addStringOption(option => 
+        option.setName('שחקן')
+              .setDescription('שם השחקן לביצוע חיפוש')
+              .setRequired(true)
+    )
+    .addStringOption(option =>
+        option.setName('סיכון')
+            .setDescription('בחר את רמת הסיכון')
+            .setRequired(true)
+            .addChoices(
+                { name: 'נמוך', value: '🟢 נמוך 🟢' },
+                { name: 'בינוני', value: '🟠 בינוני 🟠' },
+                { name: 'גבוה', value: '🔴 גבוה 🔴' },
+                { name: 'מסוכן מאוד', value: '⛔ מסוכן מאוד ⛔' }
+            )
+    )
+    .addIntegerOption(option =>
+        option.setName('חיסור-מחיר')
+              .setDescription('בכמה פחות לקנות את השחקן')
+              .setRequired(true)
+    )
+    

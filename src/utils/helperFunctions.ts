@@ -1,4 +1,4 @@
-import { TextChannel, NewsChannel, GuildMember, User, Channel } from "discord.js";
+import { TextChannel, NewsChannel, GuildMember, User, Channel, StringSelectMenuOptionBuilder, ActionRowBuilder, StringSelectMenuBuilder, CommandInteraction, StringSelectMenuInteraction } from "discord.js";
 import { config } from "../index"
 import { withErrorHandling } from "./errorHandler";
 
