@@ -8,7 +8,7 @@ export const handleOpenDMInteraction = withErrorHandling(async (interaction: Com
     if (user) {
         const action = interaction.options.get('פעולה')?.value
         if (action === 'open') {
-            await createPrivateChat(user)
+            await createPrivateChat(user, false)
             await interaction.reply({
                 content: `נפתח צאט פרטי עם המשתמש ${user}`,
                 ephemeral: true
@@ -23,7 +23,7 @@ export const handleOpenDMInteraction = withErrorHandling(async (interaction: Com
     }
 })
 
-export const createPrivateChat = withErrorHandling(async (user: User) => {
+export const createPrivateChat = withErrorHandling(async (user: User, isVIP: boolean) => {
     if (!(await dbManager.DM.checkIfChatExists(user.id))) {
         const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId.toString())
         if (!guild.channels.cache.find(category => category.name === '🔒 | צאטים פרטיים | 🔒')){
@@ -57,7 +57,7 @@ export const createPrivateChat = withErrorHandling(async (user: User) => {
                                 "בנוסף, זמינים לך החדרים במתחם החברי מועדון שלנו. מוזמן לטייל שם ולראות תוכן אשר זמין רק לכם!\n" +
                                 "שוב, ברוך הבא ותודה על תמיכתך❤️"
                 await dmChannel.send(message)
-                await dbManager.DM.createNewChat(user.id, dmChannel.id)
+                await dbManager.DM.createNewChat(user.id, dmChannel.id, isVIP)
             }
         }
     }

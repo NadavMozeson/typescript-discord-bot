@@ -3,6 +3,7 @@ import { memberBanEmbed, memberUnbanEmbed, memberTimeoutEmbed } from '../compone
 import { withErrorHandling } from '../utils/errorHandler';
 import { config } from '../index';
 import { client } from '../index';
+import { createPrivateChat, deletePrivateChat } from '../assets/privateChats';
 
 type GuildBanEvent = {
   user: { bot: boolean; id: string; };
@@ -45,11 +46,27 @@ export async function setupMemberEvents() {
   client.on(
     'guildMemberUpdate',
     withErrorHandling(async (oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) => {
-      if (oldMember.communicationDisabledUntil !== newMember.communicationDisabledUntil) {
-        if (newMember.communicationDisabledUntil) {
-          await memberTimeoutEmbed(newMember.guild, newMember);
-        }
-      }
+      await checkIfTimeout(oldMember, newMember)
+      await checkForVIPUpdate(oldMember, newMember)
     }),
   );
 }
+
+const checkIfTimeout = withErrorHandling(async (oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) => {
+  if (oldMember.communicationDisabledUntil !== newMember.communicationDisabledUntil) {
+    if (newMember.communicationDisabledUntil) {
+      await memberTimeoutEmbed(newMember.guild, newMember);
+    }
+  }
+})
+
+const checkForVIPUpdate = withErrorHandling(async (oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) => {
+  const role = await oldMember.guild.roles.fetch(config.SERVER.ROLES.VIP.toString())
+  if (role) {
+    if (!oldMember.roles.cache.has(role.id) && newMember.roles.cache.has(role.id)) {
+      await createPrivateChat(newMember.user, true)
+    } else if (oldMember.roles.cache.has(role.id) && !newMember.roles.cache.has(role.id)) {
+      await deletePrivateChat(newMember.user)
+    }
+  }
+})
