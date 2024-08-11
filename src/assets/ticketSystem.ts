@@ -9,8 +9,8 @@ export const setupTicketSystem = withErrorHandling(async () => {
 })
 
 export const createNewTicket = withErrorHandling(async (interaction: ButtonInteraction, reason: string) => {
-    if (await dbManager.checkIfTicketExists(interaction.user.id)){
-        const channel = await interaction.guild?.channels.fetch(await dbManager.getTicketChannel(interaction.user.id))
+    if (await dbManager.Tickets.checkIfTicketExists(interaction.user.id)){
+        const channel = await interaction.guild?.channels.fetch(await dbManager.Tickets.getTicketChannel(interaction.user.id))
         await interaction.reply({
             content: `||${interaction.user}||\n**יש לך כבר טיקט פתוח:**\n${channel}`,
             ephemeral: true
@@ -25,9 +25,6 @@ export const createNewTicket = withErrorHandling(async (interaction: ButtonInter
         await temp_cat?.setPosition(0)
     }
     const category = interaction.guild?.channels.cache.find(category => category.name === '📩 | אזור טיקטים | 📩')
-    if(category){
-        
-    }
     if (category){
         const ticketChannel = await interaction.guild?.channels.create({
             name: `טיקט-${interaction.user.displayName}`,
@@ -62,14 +59,14 @@ export const createNewTicket = withErrorHandling(async (interaction: ButtonInter
             } else {
                 await newTicketEmbed(interaction.user.id, ticketChannel.id, 'כללי')
             }
-            await dbManager.createNewTicket(interaction.user.id, ticketChannel.id)
+            await dbManager.Tickets.createNewTicket(interaction.user.id, ticketChannel.id)
         }
     }
 })
 
 export const confirmTicketClose = withErrorHandling(async (interaction: ButtonInteraction) => {
     await closeTicketLogEmbed(interaction)
-    await dbManager.deleteTicket(interaction.channelId.toString())
+    await dbManager.Tickets.deleteTicket(interaction.channelId.toString())
     await interaction.channel?.delete()
     const category = interaction.guild?.channels.cache.find(category => category.name === '📩 | אזור טיקטים | 📩')
     if (category instanceof CategoryChannel) {

@@ -190,24 +190,49 @@ class DatabaseHandler {
 	}
 }
 
+class TicketsManager {
+  ticketsHandler = new DatabaseHandler('tickets')
+  async getAllTickets() {
+      return await this.ticketsHandler.getAllData()
+  }
+  async createNewTicket(userID: string, channelID: string) {
+      await this.ticketsHandler.addData({ 'user': userID, 'channel': channelID })
+  }
+  async checkIfTicketExists(userID: string) {
+      return await this.ticketsHandler.checkIfExists({ 'user': userID })
+  }
+  async getTicketChannel(userID: string) {
+      const data = await this.ticketsHandler.getData({ 'user': userID })
+      return data?.channel
+  }
+  async deleteTicket(channelID: string) {
+      await this.ticketsHandler.deleteData({ 'channel': channelID })
+  }
+}
+
+class PrivateChatManager {
+  privateDMHandler = new DatabaseHandler('private_dm')
+  async getAll() {
+      return await this.privateDMHandler.getAllData()
+  }
+  async createNewChat(userID: string, channelID: string, isVIP: boolean = false) {
+      await this.privateDMHandler.addData({ 'user': userID, 'channel': channelID, 'VIP': isVIP })
+  }
+  async checkIfChatExists(userID: string) {
+      return await this.privateDMHandler.checkIfExists({ 'user': userID })
+  }
+  async getChatChannel(userID: string) {
+      const data = await this.privateDMHandler.getData({ 'user': userID })
+      return data?.channel
+  }
+  async deleteChat(channelID: string) {
+      await this.privateDMHandler.deleteData({ 'channel': channelID })
+  }
+}
+
 class DatabaseManagerClass {
-    ticketsHandler = new DatabaseHandler('tickets')
-    async getAllTickets() {
-        return await this.ticketsHandler.getAllData()
-    }
-    async createNewTicket(userID: string, channelID: string) {
-        await this.ticketsHandler.addData({ 'user': userID, 'channel': channelID })
-    }
-    async checkIfTicketExists(userID: string) {
-        return await this.ticketsHandler.checkIfExists({ 'user': userID })
-    }
-    async getTicketChannel(userID: string) {
-        const data = await this.ticketsHandler.getData({ 'user': userID })
-        return data?.channel
-    }
-    async deleteTicket(channelID: string) {
-        await this.ticketsHandler.deleteData({ 'channel': channelID })
-    }
+    Tickets = new TicketsManager()
+    DM = new PrivateChatManager()
 }
 
 export const dbManager = new DatabaseManagerClass()
