@@ -101,6 +101,63 @@ To develop and run this Discord bot, you'll need the following software installe
    npm run build
    ```
 
+## MongoDB Structure
+
+### Collections
+- config
+- tickets
+- private_dm
+
+### Config Structure
+```js
+{
+  "_id": {
+    "$oid": ""
+  },
+  "BOT": {
+    "Prefix": "!",
+    "Token": "YOUR_BOT_TOKEN"
+  },
+  "SERVER": {
+    "INFO": {
+      "ServerId": {
+        "$numberLong": "SERVER_ID"
+      },
+      "Owners": [
+        {
+          "$numberLong": "SERVER_OWNER1"
+        }
+      ],
+      "TicketIdle": 10
+    },
+    "ROLES": {
+      "Member": {
+        "$numberLong": "MEMBER_ROLE_ID"
+      },
+      "VIP": {
+        "$numberLong": "VIP_ROLE_ID"
+      },
+      "Support": {
+        "$numberLong": "TICKET_SUPPORT_ROLE_ID"
+      },
+      "Manager": {
+        "$numberLong": "MANAGER_ROLE_ID"
+      }
+    },
+    "CHANNELS": {
+      "LOG": {
+        "Main": {
+          "$numberLong": "MAIN_LOG_CHANNEL_ID"
+        },
+        "SuggestLog": {
+          "$numberLong": "SUGGESTIONS_LOG_CHANNEL_ID"
+        }
+      }
+    }
+  }
+}
+```
+
 ## Acknowledgments
 
 - [discord.js](https://discord.js.org/) - A powerful library for interacting with the Discord API.
