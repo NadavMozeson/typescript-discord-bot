@@ -9,6 +9,7 @@ A powerful Discord bot built with TypeScript and `discord.js`. This bot provides
 - **Default Role:** Give default role on member join
 - **Private Chat:** A private chat system with server admins and a specific user
 - **VIP Auto Private Chat:** Open and close a private chat for user with a specific role
+- **Automation FIFA Investments:** Posts and handles EA FC cards investments
 
 ## Software Requirements
 
