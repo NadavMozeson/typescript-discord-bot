@@ -1,6 +1,7 @@
 import { MongoClient, Collection, Db, WithId, Document, IntegerType, ObjectId } from 'mongodb';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { disableInvestmentButtons, updateTrackerMessage } from '../assets/investmentTracker';
 
 // MongoDB connection URL and database name
 const CONNECTION_URL = process.env.MONGO_CONNECTION_STRING as string;
@@ -37,7 +38,7 @@ export async function initializeDatabase() {
 
 const addDataToDatabase = async (collectionName: string, data: any) => {
 	const collection = collections[collectionName];
-	await collection.insertOne(data);
+	return await collection.insertOne(data);
 };
 
 const deleteDataFromDatabase = async (collectionName: string, data: any) => {
@@ -61,7 +62,7 @@ const updateOneData = async (collectionName: string, data: any, update: any) => 
 	await collection.updateOne(data, { $set: update });
 };
 
-const getDataFromDatabase = async (collectionName: string, data: any) => {
+const getDataFromDatabase = async (collectionName: string, data: any): Promise<WithId<Document> | null>  => {
 	const collection = collections[collectionName];
 	if (await checkIfDataInDatabase(collectionName, data)) {
 		return await collection.findOne(data);
@@ -126,6 +127,10 @@ interface Config {
           StatsTemp: number;
           StatsVIP: number;
         };
+        InvestmentTracker: {
+          VIP: string;
+          everyone: string;
+        },
         Ticket: string;
         Profit: string;
         Managment: string;
@@ -164,7 +169,7 @@ class DatabaseHandler {
 	}
 
 	async addData(data: any) {
-		await addDataToDatabase(this.collectionName, data);
+		return await addDataToDatabase(this.collectionName, data);
 	}
 
 	async getData(data: any) {
@@ -239,7 +244,7 @@ class PrivateChatManager {
 class InvestmentsManager {
   investmentsHandler = new DatabaseHandler('investments')
   async createNewInvestment(name:string, link: string, nation: string, rating: string, version: string, risk: string, channel: string, console_price: string, pc_price: string, user: string, msg: string, isVIP: boolean = false ) {
-      await this.investmentsHandler.addData({
+      const insertedData = await this.investmentsHandler.addData({
         "name": name,
         "nation": nation,
         "rating": rating,
@@ -253,6 +258,8 @@ class InvestmentsManager {
         "version": version,
         "vip": isVIP
       })
+      await updateTrackerMessage()
+      return insertedData
   }
   async getAllInvestment(){
     return await this.investmentsHandler.getAllData()
@@ -261,7 +268,30 @@ class InvestmentsManager {
     return await this.investmentsHandler.getData({ '_id': new ObjectId(id) })
   }
   async deleteInvestmentByID(id: string) {
-    return await this.investmentsHandler.deleteData({ '_id': new ObjectId(id) })
+    await (new InvestmentsTrackerManager()).deleteAllTrackerOfInvestment(id)
+    const deletedData = await this.investmentsHandler.deleteData({ '_id': new ObjectId(id) })
+    await updateTrackerMessage()
+    return deletedData
+  }
+}
+
+class InvestmentsTrackerManager {
+  InvestmentsTrackerHandler = new DatabaseHandler('investments_trackers')
+  async createNewTracker(userID: string, investmentID: string ) {
+    return await this.InvestmentsTrackerHandler.addData({ 'user': userID, 'investment': investmentID })
+  }
+  async deleteTracker(userID: string, investmentID: string) {
+    return await this.InvestmentsTrackerHandler.deleteData({ 'user': userID, 'investment': investmentID })
+  }
+  async checkIfExists(userID: string, investmentID: string) {
+    return await this.InvestmentsTrackerHandler.checkIfExists({ 'user': userID, 'investment': investmentID })
+  }
+  async getAllTrackerOfInvestment(investmentID: string) {
+    return await this.InvestmentsTrackerHandler.getAllDataWithSearch({ 'investment': investmentID })
+  }
+  async deleteAllTrackerOfInvestment(investmentID: string) {
+    await disableInvestmentButtons(investmentID)
+    return await this.InvestmentsTrackerHandler.bulkDeleteData({ 'investment': investmentID })
   }
 }
 
@@ -269,6 +299,7 @@ class DatabaseManagerClass {
     Tickets = new TicketsManager()
     DM = new PrivateChatManager()
     Investments = new InvestmentsManager()
+    InvestmentsTracker = new InvestmentsTrackerManager()
 }
 
 export const dbManager = new DatabaseManagerClass()

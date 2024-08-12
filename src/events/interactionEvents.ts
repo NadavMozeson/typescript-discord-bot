@@ -4,6 +4,7 @@ import { ButtonInteraction, CommandInteraction, Interaction, StringSelectMenuInt
 import { handleTicketButtons } from '../assets/ticketButtons';
 import { handleOpenDMInteraction } from '../assets/privateChats';
 import { createNewInvestment, postEarlyExitMessage, postFirstExitMessage, postNewInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments';
+import { handelTrackerButtonClick } from '../assets/investmentTracker';
 
 export async function setupInteractionEvents() {
 	client.on('interactionCreate', withErrorHandling(async (interaction: Interaction) => {
@@ -20,6 +21,8 @@ export async function setupInteractionEvents() {
 const handleButtons = withErrorHandling(async (interaction: ButtonInteraction) => {
     if (interaction.customId.toString().includes('ticket')) {
         await handleTicketButtons(interaction)
+    } else if (interaction.customId.toString().includes('tracker_button_')) {
+        await handelTrackerButtonClick(interaction)
     }
 })
 

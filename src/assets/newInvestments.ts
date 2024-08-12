@@ -1,4 +1,4 @@
-import { ActionRowBuilder, APIAttachment, Attachment, AttachmentBuilder, AttachmentPayload, BufferResolvable, CommandInteraction, JSONEncodable, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextChannel } from "discord.js"
+import { ActionRowBuilder, APIAttachment, Attachment, AttachmentBuilder, AttachmentPayload, BufferResolvable, CommandInteraction, JSONEncodable, Message, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextChannel } from "discord.js"
 import { withErrorHandling } from "../utils/errorHandler"
 import { getFutbinPlayerPageData, getPageContent } from "../utils/puppeteerManager"
 import * as cheerio from 'cheerio'
@@ -6,6 +6,7 @@ import axios from "axios"
 import { dbManager } from "../utils/databaseManager"
 import { client, config } from "../index"
 import { Stream } from "stream"
+import { generateTrackerButtons, notifyInvestmentTracker } from "./investmentTracker"
 
 export const createNewInvestment = withErrorHandling(async (interaction: CommandInteraction) => {
     const playerSearchName = interaction.options.get('שחקן')?.value?.toString()
@@ -13,7 +14,7 @@ export const createNewInvestment = withErrorHandling(async (interaction: Command
     const priceDifference = (interaction.options.get('חיסור-מחיר')?.value)?.toString().replace(/\D/g, '')
     if (playerSearchName && investmentRisk && priceDifference){
         await interaction.reply({ content: 'מבצע חיפוש לשחקן, אנא המתן...', ephemeral: true })
-        const url = `https://www.futbin.com/players?page=1&search=${playerSearchName}`
+        const url = `https://www.futbin.com/players?search=${encodeURI(playerSearchName)}`
         const content = await getPageContent(url)
         const $ = cheerio.load(content)
         const results: { label:string, value: string }[] = []
@@ -39,10 +40,11 @@ export const createNewInvestment = withErrorHandling(async (interaction: Command
             for(let i=0; i<results.length; i += 20){
                 menusOptions.push(results.slice(i, i + 20))
             }
-            const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>()
+            const components: ActionRowBuilder<StringSelectMenuBuilder>[] = []
             for(let i=0; i<menusOptions.length; i++){
+                components.push(new ActionRowBuilder<StringSelectMenuBuilder>())
                 const selectMenu = new StringSelectMenuBuilder()
-                    .setCustomId('new_investment_pick_player')
+                    .setCustomId(`new_investment_pick_player_${i}`)
                     .setPlaceholder(`רשימת תוצאות ${i+1}`)
                     .addOptions(menusOptions[i].map(player => 
                             new StringSelectMenuOptionBuilder()
@@ -50,9 +52,9 @@ export const createNewInvestment = withErrorHandling(async (interaction: Command
                             .setValue(JSON.stringify({ url: player.value, risk: investmentRisk, priceDiff: priceDifference }))
                         )
                     );
-                actionRow.addComponents(selectMenu)
+                components[i].addComponents(selectMenu)
             }
-            await interaction.editReply({ content: 'בחר שחקן', components: [actionRow] })
+            await interaction.editReply({ content: 'בחר שחקן', components: components })
         } else{
             await interaction.editReply({ content: 'לא נמצא שחקן עם שם זה' })
         }
@@ -75,23 +77,25 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
         if (priceConsole < parseInt(pageData.minConsolePrice.toString())){
             priceConsoleLabel = parseInt(pageData.minConsolePrice.toString()).toLocaleString()
         }
+        const everyoneRole = interaction.guild?.roles.everyone
         const formattedText = `## ${flagEmoji} ${pageData.name.toUpperCase()} ${pageData.rating} ${flagEmoji}\n\n` +
             `${config.BOT.Emoji.XBox}${config.BOT.Emoji.PS} **:** ${priceConsoleLabel} ${config.BOT.Emoji.FifaCoins}\n` +
             `${config.BOT.Emoji.PC} **:** ${pricePCLabel} ${config.BOT.Emoji.FifaCoins}\n` +
             `${paramsData.risk}\n` +
             `||${interaction.user} **מפרסם ההשקעה** ||\n` +
-            `**||${interaction.guild?.roles.everyone}||**`;
+            `**||${everyoneRole}||**`;
 
         const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
         let isVIP = false
-        if (interaction.channel instanceof TextChannel) {
-            const channelPerms = interaction.channel.permissionOverwrites.cache.get(interaction.channel.guild.roles.everyone.id);
+        if (interaction.channel instanceof TextChannel && everyoneRole) {
+            const channelPerms = interaction.channel.permissionOverwrites.cache.get(everyoneRole.id);
             if (channelPerms && channelPerms.deny.has(PermissionFlagsBits.ViewChannel)) {
                 isVIP = true
             }
         }
         if (msg) {
-            await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com' + paramsData.url, pageData.country, pageData.rating, pageData.card, paramsData.risk, interaction.channelId, priceConsole.toString(), pricePC.toString(), interaction.user.id, msg.id, isVIP)
+            const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com' + paramsData.url, pageData.country, pageData.rating, pageData.card, paramsData.risk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
+            await msg.edit({ components: [await generateTrackerButtons(insertedData.insertedId.toString())] })
         }
     }
 })
@@ -114,8 +118,9 @@ export const sendInvestmentListPicker = withErrorHandling(async (interaction: Co
     for(let i=0; i<allInvestmentsData.length; i += 20){
         menusOptions.push(result.slice(i, i + 20))
     }
-    const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>()
+    const components: ActionRowBuilder<StringSelectMenuBuilder>[] = []
     for(let i=0; i<menusOptions.length; i++){
+        components.push(new ActionRowBuilder<StringSelectMenuBuilder>())
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId(customID)
             .setPlaceholder(`רשימת תוצאות ${i+1}`)
@@ -125,9 +130,9 @@ export const sendInvestmentListPicker = withErrorHandling(async (interaction: Co
                     .setValue(JSON.stringify({ id: player.value, message: messageInput }))
                 )
             );
-        actionRow.addComponents(selectMenu)
+        components[i].addComponents(selectMenu)
     }
-    await interaction.editReply({ content: 'בחר השקעה', components: [actionRow] })
+    await interaction.editReply({ content: 'בחר השקעה', components: components })
 })
 
 export const postProfitMessage = withErrorHandling(async (interaction: StringSelectMenuInteraction) => {
@@ -174,7 +179,8 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
                 }
                 const profitChannel = await client.channels.fetch(config.SERVER.CHANNELS.Profit.toString())
                 if (profitChannel instanceof TextChannel) {
-                    await profitChannel.send({ content: formattedText, files });
+                    const profitMsg = await profitChannel.send({ content: formattedText, files });
+                    await notifyInvestmentTracker(profitMsg, commandData.id)
                 }
                 await dbManager.Investments.deleteInvestmentByID(commandData.id)
             }
@@ -194,16 +200,17 @@ export const postFirstExitMessage = withErrorHandling(async (interaction: String
                 `### ${flagEmoji} ${pageData.name.toUpperCase()} ${pageData.rating} ${flagEmoji}\n` +
                 `${commandData.message}\n` +
                 `**||${interaction.guild?.roles.everyone}||**`;
-            
             if (investmentData.vip) {
                 const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.VIP.toString())
                 if (exitChannel instanceof TextChannel) {
-                    await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                    const msg = await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                    await notifyInvestmentTracker(msg, commandData.id)
                 }
             } else {
                 const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.everyone.toString())
                 if (exitChannel instanceof TextChannel) {
-                    await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                    const msg = await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                    await notifyInvestmentTracker(msg, commandData.id)
                 }
             }
             
@@ -227,12 +234,14 @@ export const postEarlyExitMessage = withErrorHandling(async (interaction: String
             if (investmentData.vip) {
                 const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.VIP.toString())
                 if (exitChannel instanceof TextChannel) {
-                    await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                    const msg = await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                    await notifyInvestmentTracker(msg, commandData.id)
                 }
             } else {
                 const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.everyone.toString())
                 if (exitChannel instanceof TextChannel) {
-                    await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                    const msg = await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                    await notifyInvestmentTracker(msg, commandData.id)
                 }
             }
             await dbManager.Investments.deleteInvestmentByID(commandData.id)
@@ -240,7 +249,7 @@ export const postEarlyExitMessage = withErrorHandling(async (interaction: String
     }
 })
 
-const countryNameToFlag = async (countryName: string) => {
+export const countryNameToFlag = async (countryName: string) => {
     try {
         const response = await axios.get(`https://restcountries.com/v3.1/name/${countryName}`);
         const countryData: {altSpellings: string}[] = response.data;

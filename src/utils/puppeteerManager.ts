@@ -4,6 +4,17 @@ import { withErrorHandling } from './errorHandler';
 
 const USER_AGENT_STRING = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 
+const BLOCKED_DOMAINS = new Set([
+    'c.amazon-adsystem.com',
+    'google-analytics.com',
+    'bpm://',
+    'cdn1.vntsm.com',
+    'hbopenbid.pubmatic.com',
+    'doubleclick.net',
+    'ads.yahoo.com',
+    'doubleclick.net'
+]);
+
 export const getFutbinPlayerPageData = withErrorHandling(async function (url : string) {
     const selector = 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div'
     const selectorsToHide = ['body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > a', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > a']
@@ -17,14 +28,28 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
     const watermarkUrl = guild.iconURL()?.toString();
     const watermarkText = '@' + guild.name.toString();
 
-    await page.goto(url);
+    await page.setRequestInterception(true);
+    
+    page.on('request', (request) => {
+        const url = request.url();
+        if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
+            request.abort();
+        } else {
+            request.continue();
+        }
+    });
+
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForSelector(selector)
 
-    const playerName = await page.evaluate((selector) => {
-        const element = document.querySelector(selector);
-        return element ? element.textContent : null;
-    }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-body-section.player-page-grid > div.medium-column > div.player-page-grid-inside > div.player-body-left.sidebar.gtSmartphone-only > div.standard-box.info-traits > div.info-wrapper > table > tbody > tr:nth-child(1) > td');
+    const urlParts = url.split('/');
+    const playerNameWithHyphens = urlParts[urlParts.length - 1];
 
+    const playerName = playerNameWithHyphens
+        .split('-') 
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).toString().replace(',', ' ');
+    
+    
     const playerRating = await page.evaluate((selector) => {
         const element = document.querySelector(selector);
         return element ? element.textContent : null;
@@ -139,10 +164,23 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
 })
 
 export const getPageContent = withErrorHandling(async (url: string) => {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page: Page = await browser.newPage();
 
     await page.setUserAgent(USER_AGENT_STRING);
+
+    await page.setRequestInterception(true);
+    
+    page.on('request', (request) => {
+        const url = request.url();
+        if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
+            request.abort();
+        } else {
+            request.continue();
+        }
+    });
+
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
     await page.goto(url);
 
