@@ -8,6 +8,8 @@ import { client, config } from "../index"
 import { Stream } from "stream"
 import { generateTrackerButtons, notifyInvestmentTracker } from "./investmentTracker"
 
+const RETRIES = 5
+
 export const createNewInvestment = withErrorHandling(async (interaction: CommandInteraction) => {
     const playerSearchName = interaction.options.get('שחקן')?.value?.toString()
     const investmentRisk = interaction.options.get('סיכון')?.value?.toString()
@@ -64,7 +66,13 @@ export const createNewInvestment = withErrorHandling(async (interaction: Command
 export const postNewInvestment = withErrorHandling(async (interaction: StringSelectMenuInteraction) => {
     const paramsData = JSON.parse(interaction.values[0])
     await interaction.update({ content: `אנא המתן בזמן שאני יוצר את ההודעה של ההשקעה`, components: [] })
-    const pageData = await getFutbinPlayerPageData('https://www.futbin.com' + paramsData.url)
+    let pageData = await getFutbinPlayerPageData('https://www.futbin.com' + paramsData.url)
+        for (let i=0; i<RETRIES; i++) {
+            if (pageData && pageData.country && pageData.pricePC && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
+                break
+            }
+            pageData = await getFutbinPlayerPageData('https://www.futbin.com' + paramsData.url)
+        }
     if (pageData?.country && pageData.minPCPrice && pageData.minConsolePrice && pageData.pricePC && pageData.priceConsole && pageData.name && pageData.rating && pageData.card) {
         const flagEmoji = await countryNameToFlag(pageData.country)
         const pricePC = parseInt(pageData.pricePC.replace(/\D/g, '')) - parseInt(paramsData.priceDiff)
@@ -140,7 +148,13 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
     const commandData = JSON.parse(interaction.values[0])
     const investmentData = await dbManager.Investments.getInvestmentByID(commandData.id)
     if (investmentData){
-        const pageData = await getFutbinPlayerPageData(investmentData.link)
+        let pageData = await getFutbinPlayerPageData(investmentData.link)
+        for (let i=0; i<RETRIES; i++) {
+            if (pageData && pageData.country && pageData.pricePC && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
+                break
+            }
+            pageData = await getFutbinPlayerPageData(investmentData.link)
+        }
         if (pageData?.country && pageData.pricePC && pageData.priceConsole && pageData.name && pageData.rating && pageData.card) {
             const flagEmoji = await countryNameToFlag(pageData.country)
             const profitPC = parseInt(pageData.pricePC.replace(/\D/g, '')) - parseInt(investmentData['pc price'])
@@ -193,7 +207,13 @@ export const postFirstExitMessage = withErrorHandling(async (interaction: String
     const commandData = JSON.parse(interaction.values[0])
     const investmentData = await dbManager.Investments.getInvestmentByID(commandData.id)
     if (investmentData){
-        const pageData = await getFutbinPlayerPageData(investmentData.link)
+        let pageData = await getFutbinPlayerPageData(investmentData.link)
+        for (let i=0; i<RETRIES; i++) {
+            if (pageData && pageData.country && pageData.pricePC && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
+                break
+            }
+            pageData = await getFutbinPlayerPageData(investmentData.link)
+        }
         if (pageData?.country && pageData.name && pageData.rating) {
             const flagEmoji = await countryNameToFlag(pageData.country)
             const formattedText = `## ✅ יציאה ראשונה ✅\n` +
@@ -223,7 +243,13 @@ export const postEarlyExitMessage = withErrorHandling(async (interaction: String
     const commandData = JSON.parse(interaction.values[0])
     const investmentData = await dbManager.Investments.getInvestmentByID(commandData.id)
     if (investmentData){
-        const pageData = await getFutbinPlayerPageData(investmentData.link)
+        let pageData = await getFutbinPlayerPageData(investmentData.link)
+        for (let i=0; i<RETRIES; i++) {
+            if (pageData && pageData.country && pageData.pricePC && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
+                break
+            }
+            pageData = await getFutbinPlayerPageData(investmentData.link)
+        }
         if (pageData?.country && pageData.name && pageData.rating) {
             const flagEmoji = await countryNameToFlag(pageData.country)
             const formattedText = `## זמן למכור\n` +
@@ -257,7 +283,7 @@ export const postNewFoderInvestment = withErrorHandling(async (interaction: Comm
     if (foderRatingString) {
         const foderRating = parseInt(foderRatingString)
         let pageData = await getFutbinFoderPageData(foderRating)
-        for (let i=0; i<5; i++) {
+        for (let i=0; i<RETRIES; i++) {
             if (pageData && pageData.country && pageData.pricePC && priceDiff && investmentRisk && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
                 break
             }
@@ -309,7 +335,7 @@ export const postNewTOTWInvestment = withErrorHandling(async (interaction: Comma
     if (foderRatingString) {
         const foderRating = parseInt(foderRatingString)
         let pageData = await getFutbinTOTWPageData(foderRating)
-        for (let i=0; i<5; i++) {
+        for (let i=0; i<RETRIES; i++) {
             if (pageData && pageData.country && pageData.pricePC && priceDiff && investmentRisk && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
                 break
             }
@@ -352,7 +378,6 @@ export const postNewTOTWInvestment = withErrorHandling(async (interaction: Comma
         }
     }
 })
-
 
 export const countryNameToFlag = async (countryName: string) => {
     try {
