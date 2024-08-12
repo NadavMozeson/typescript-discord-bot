@@ -7,7 +7,7 @@ const USER_AGENT_STRING = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit
 export const getFutbinPlayerPageData = withErrorHandling(async function (url : string) {
     const selector = 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div'
     const selectorsToHide = ['body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > a', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > a']
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
 
     const page: Page = await browser.newPage();
 
@@ -30,10 +30,14 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
         return element ? element.textContent : null;
     }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-card-section > div:nth-child(1) > div > div.playercard-24-rating-pos-wrapper > div.playercard-24-rating');
 
-    const country = await page.evaluate((selector) => {
-        const element = document.querySelector(selector);
-        return element ? element.textContent : null;
-    }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-body-section.player-page-grid > div.medium-column > div.player-page-grid-inside > div.player-body-left.sidebar.gtSmartphone-only > div.standard-box.info-traits > div.info-wrapper > table > tbody > tr:nth-child(5) > td');
+    const country = await page.evaluate(() => {
+        const row = Array.from(document.querySelectorAll('table tr')).find(row => {
+            const th = row.querySelector('th');
+            return th && th.textContent?.trim() === 'Nation';
+        });
+        const nationLink = row?.querySelector('td.row-with-image a');
+        return nationLink ? nationLink.textContent?.trim() : null;
+    });    
     
     const pricePC = await page.evaluate((selector) => {
         const element = document.querySelector(selector);
@@ -45,11 +49,15 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
         return element ? element.textContent : null;
     }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > div.column > div.price.inline-with-icon.lowest-price-1');
 
-    const cardType = await page.evaluate((selector) => {
-        const element = document.querySelector(selector);
-        return element ? element.textContent : null;
-    }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-body-section.player-page-grid > div.medium-column > div.player-page-grid-inside > div.player-body-left.sidebar.gtSmartphone-only > div.standard-box.info-traits > div.info-wrapper > table > tbody > tr:nth-child(13) > td');
-
+    const cardType = await page.evaluate(() => {
+        const row = Array.from(document.querySelectorAll('table tr')).find(row => {
+            const th = row.querySelector('th');
+            return th?.textContent?.trim() === 'Revision';
+        });
+        const cardText = row?.querySelector('td');
+        return cardText ? cardText.textContent?.trim() : null;
+    });
+    
     const pcMinPrice = await page.evaluate((selector) => {
         const element = document.querySelector(selector);
         return element ? element.textContent : null;

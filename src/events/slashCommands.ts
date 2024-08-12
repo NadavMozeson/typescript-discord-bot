@@ -6,6 +6,8 @@ export async function setupSlashCommands() {
         await client.application.commands.create(OpenDM)
         await client.application.commands.create(Investment)
         await client.application.commands.create(Profit)
+        await client.application.commands.create(Exit)
+        await client.application.commands.create(FirstExit)
     }
 }
 
@@ -58,5 +60,24 @@ const Profit = new SlashCommandBuilder()
     .addStringOption(option =>
         option.setName('הודעה')
             .setDescription('הודעה שתשלח יחד עם ההודעת רווחים')
+            .setRequired(true)
+    )
+
+
+const Exit = new SlashCommandBuilder()
+    .setName('exit')
+    .setDescription('שליחת הודעה על יציאה ללא רווח')
+    .addStringOption(option =>
+        option.setName('הודעה')
+            .setDescription('הודעה שתשלח יחד עם ההודעת יציאה')
+            .setRequired(true)
+    )
+
+const FirstExit = new SlashCommandBuilder()
+    .setName('first-exit')
+    .setDescription('שליחת הודעה על יציאה ראשונה')
+    .addStringOption(option =>
+        option.setName('הודעה')
+            .setDescription('הודעה שתשלח יחד עם ההודעת יציאה ראשונה')
             .setRequired(true)
     )

@@ -238,7 +238,7 @@ class PrivateChatManager {
 
 class InvestmentsManager {
   investmentsHandler = new DatabaseHandler('investments')
-  async createNewInvestment(name:string, link: string, nation: string, rating: string, version: string, risk: string, channel: string, console_price: string, pc_price: string, user: string, msg: string ) {
+  async createNewInvestment(name:string, link: string, nation: string, rating: string, version: string, risk: string, channel: string, console_price: string, pc_price: string, user: string, msg: string, isVIP: boolean = false ) {
       await this.investmentsHandler.addData({
         "name": name,
         "nation": nation,
@@ -250,7 +250,8 @@ class InvestmentsManager {
         "pc price": pc_price,
         "user": user,
         "msg": msg,
-        "version": version
+        "version": version,
+        "vip": isVIP
       })
   }
   async getAllInvestment(){

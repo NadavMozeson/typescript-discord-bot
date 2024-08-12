@@ -1,4 +1,4 @@
-import { ActionRowBuilder, APIAttachment, Attachment, AttachmentBuilder, AttachmentPayload, BufferResolvable, CommandInteraction, JSONEncodable, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextChannel } from "discord.js"
+import { ActionRowBuilder, APIAttachment, Attachment, AttachmentBuilder, AttachmentPayload, BufferResolvable, CommandInteraction, JSONEncodable, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextChannel } from "discord.js"
 import { withErrorHandling } from "../utils/errorHandler"
 import { getFutbinPlayerPageData, getPageContent } from "../utils/puppeteerManager"
 import * as cheerio from 'cheerio'
@@ -83,32 +83,27 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
             `**||${interaction.guild?.roles.everyone}||**`;
 
         const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
+        let isVIP = false
+        if (interaction.channel instanceof TextChannel) {
+            const channelPerms = interaction.channel.permissionOverwrites.cache.get(interaction.channel.guild.roles.everyone.id);
+            if (channelPerms && channelPerms.deny.has(PermissionFlagsBits.ViewChannel)) {
+                isVIP = true
+            }
+        }
         if (msg) {
-            await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com' + paramsData.url, pageData.country, pageData.rating, pageData.card, paramsData.risk, interaction.channelId, priceConsole.toString(), pricePC.toString(), interaction.user.id, msg.id)
+            await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com' + paramsData.url, pageData.country, pageData.rating, pageData.card, paramsData.risk, interaction.channelId, priceConsole.toString(), pricePC.toString(), interaction.user.id, msg.id, isVIP)
         }
     }
 })
 
-const countryNameToFlag = async (countryName: string) => {
-    try {
-        const response = await axios.get(`https://restcountries.com/v3.1/name/${countryName}`);
-        const countryData: {altSpellings: string}[] = response.data;
-    
-        if (countryData.length > 0) {
-          const firstAltSpelling = countryData[0].altSpellings[0].toUpperCase();
-          return firstAltSpelling
-            .split('')
-            .map(char => String.fromCodePoint(0x1F1E6 + char.charCodeAt(0) - 'A'.charCodeAt(0)))
-            .join('');
-        }
-        return null;
-    } catch (error) {
-        return 'Error fetching flag';
-    }
-};
-
-export const sendProfitMessage = withErrorHandling(async (interaction: CommandInteraction) => {
+export const sendInvestmentListPicker = withErrorHandling(async (interaction: CommandInteraction) => {
     await interaction.reply({ content: 'משיג מידע על כל ההשקעות...', ephemeral: true });
+    let customID = 'post_profit_pick_player'
+    if (interaction.commandName === 'first-exit') {
+        customID = 'first_exit_pick_player'
+    } else if (interaction.commandName === 'exit') {
+        customID = 'early_exit_pick_player'
+    }
     const messageInput = interaction.options.get('הודעה')?.value?.toString()
     const allInvestmentsData = (await dbManager.Investments.getAllInvestment())
     const result: { label:string, value: string }[] = []
@@ -122,7 +117,7 @@ export const sendProfitMessage = withErrorHandling(async (interaction: CommandIn
     const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>()
     for(let i=0; i<menusOptions.length; i++){
         const selectMenu = new StringSelectMenuBuilder()
-            .setCustomId('post_profit_pick_player')
+            .setCustomId(customID)
             .setPlaceholder(`רשימת תוצאות ${i+1}`)
             .addOptions(menusOptions[i].map(player => 
                     new StringSelectMenuOptionBuilder()
@@ -157,11 +152,17 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
             } else {
                 profitConsoleLabel = '❌'
             }
-            const formattedText = `## ${flagEmoji} ${pageData.name.toUpperCase()} ${pageData.rating} ${flagEmoji}\n\n` +
+            let formattedText = `## ${flagEmoji} ${pageData.name.toUpperCase()} ${pageData.rating} ${flagEmoji}\n\n` +
                 `${config.BOT.Emoji.XBox}${config.BOT.Emoji.PS} **:** +${profitConsoleLabel} ${config.BOT.Emoji.FifaCoins}\n` +
                 `${config.BOT.Emoji.PC} **:** +${profitPCLabel} ${config.BOT.Emoji.FifaCoins}\n` +
-                `${commandData.message}\n` +
-                `**||${interaction.guild?.roles.everyone}||**`;
+                `${commandData.message}\n`
+            if (investmentData.vip) {
+                formattedText += `\n**:money_with_wings:השקעה זו עלתה רק לחברי המועדון:money_with_wings:**\n` +
+                    `איך אתם יכולים להיכנס?\n` +
+                    `כל הפרטים כאן:point_down:\n` +
+                    `https://discord.com/channels/919996404368306227/1271487467727360022\n`
+            }
+            formattedText += `\n**||${interaction.guild?.roles.everyone}||**`;
             
             const channel = await client.channels.fetch(investmentData.channel.toString())
             if (channel instanceof TextChannel) {
@@ -180,3 +181,79 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
         }
     }
 })
+
+export const postFirstExitMessage = withErrorHandling(async (interaction: StringSelectMenuInteraction) => {
+    await interaction.update({ content: `אנא המתן בזמן שאני יוצר את ההודעה של יציאה ראשונה`, components: [] })
+    const commandData = JSON.parse(interaction.values[0])
+    const investmentData = await dbManager.Investments.getInvestmentByID(commandData.id)
+    if (investmentData){
+        const pageData = await getFutbinPlayerPageData(investmentData.link)
+        if (pageData?.country && pageData.name && pageData.rating) {
+            const flagEmoji = await countryNameToFlag(pageData.country)
+            const formattedText = `## ✅ יציאה ראשונה ✅\n` +
+                `### ${flagEmoji} ${pageData.name.toUpperCase()} ${pageData.rating} ${flagEmoji}\n` +
+                `${commandData.message}\n` +
+                `**||${interaction.guild?.roles.everyone}||**`;
+            
+            if (investmentData.vip) {
+                const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.VIP.toString())
+                if (exitChannel instanceof TextChannel) {
+                    await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                }
+            } else {
+                const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.everyone.toString())
+                if (exitChannel instanceof TextChannel) {
+                    await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                }
+            }
+            
+        }
+    }
+})
+
+export const postEarlyExitMessage = withErrorHandling(async (interaction: StringSelectMenuInteraction) => {
+    await interaction.update({ content: `אנא המתן בזמן שאני יוצר את ההודעה של יציאה מוקדמת`, components: [] })
+    const commandData = JSON.parse(interaction.values[0])
+    const investmentData = await dbManager.Investments.getInvestmentByID(commandData.id)
+    if (investmentData){
+        const pageData = await getFutbinPlayerPageData(investmentData.link)
+        if (pageData?.country && pageData.name && pageData.rating) {
+            const flagEmoji = await countryNameToFlag(pageData.country)
+            const formattedText = `## זמן למכור\n` +
+                `### ${flagEmoji} ${pageData.name.toUpperCase()} ${pageData.rating} ${flagEmoji}\n` +
+                `${commandData.message}\n` +
+                `**||${interaction.guild?.roles.everyone}||**`;
+            
+            if (investmentData.vip) {
+                const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.VIP.toString())
+                if (exitChannel instanceof TextChannel) {
+                    await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                }
+            } else {
+                const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.everyone.toString())
+                if (exitChannel instanceof TextChannel) {
+                    await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                }
+            }
+            await dbManager.Investments.deleteInvestmentByID(commandData.id)
+        }
+    }
+})
+
+const countryNameToFlag = async (countryName: string) => {
+    try {
+        const response = await axios.get(`https://restcountries.com/v3.1/name/${countryName}`);
+        const countryData: {altSpellings: string}[] = response.data;
+    
+        if (countryData.length > 0) {
+          const firstAltSpelling = countryData[0].altSpellings[0].toUpperCase();
+          return firstAltSpelling
+            .split('')
+            .map(char => String.fromCodePoint(0x1F1E6 + char.charCodeAt(0) - 'A'.charCodeAt(0)))
+            .join('');
+        }
+        return null;
+    } catch (error) {
+        return 'Error fetching flag';
+    }
+};
