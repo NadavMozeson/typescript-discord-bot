@@ -373,50 +373,60 @@ export const getFutbinTOTWPageData = withErrorHandling(async function (foderRati
         await newPage.close();
     }
 
-    const element: ElementHandle | null = await page.$(selector);
+    const marginBoundingBox = await page.evaluate((tbodySelector) => {
+        const tbody = document.querySelector(tbodySelector);
+        if (!tbody) return null;
 
-    if (element) {
-        const boundingBox = await element.boundingBox();
-        
-        if (boundingBox) {
-            const marginBoundingBox = {
-                x: boundingBox.x,
-                y: boundingBox.y,
-                width: boundingBox.width - 715,
-                height: boundingBox.height - 1900
-            };
-            await page.waitForSelector(selector + ' > tr:nth-child(5) > td.table-name')
+        const trs = Array.from(tbody.querySelectorAll('tr')).slice(0, 5);
 
-            await page.evaluate((tbodySelector: string) => {
-                const tbody = document.querySelector(tbodySelector);
-                if (!tbody) return;
+        if (trs.length === 0) return null;
+
+        let minX = Number.POSITIVE_INFINITY;
+        let minY = Number.POSITIVE_INFINITY;
+        let maxX = Number.NEGATIVE_INFINITY;
+        let maxY = Number.NEGATIVE_INFINITY;
+
+        trs.forEach(tr => {
+            const boundingBox = tr.getBoundingClientRect();
+            minX = Math.min(minX, boundingBox.x);
+            minY = Math.min(minY, boundingBox.y);
+            maxX = Math.max(maxX, boundingBox.x + 340);
+            maxY = Math.max(maxY, boundingBox.y + boundingBox.height);
+        });
+        return {
+        x: minX,
+        y: minY,
+        width: maxX - minX,
+        height: maxY - minY}
+    }, selector)
         
-                const trs = Array.from(tbody.querySelectorAll('tr')).slice(0, 5);
-        
-                trs.forEach(tr => {
-                    const tdToMove = tr.querySelector('td.table-price.no-wrap.platform-ps-only') as HTMLTableCellElement;
-                    if (tdToMove) {
-                        const tds = Array.from(tr.querySelectorAll('td')) as HTMLTableCellElement[];
-                        const tdIndex = tds.indexOf(tdToMove);
-                        if (tdIndex !== -1 && tds.length > 1) {
-                            tr.removeChild(tdToMove);
-                            if (tds[1]) {
-                                tr.insertBefore(tdToMove, tds[1]);
-                            } else {
-                                tr.appendChild(tdToMove);
-                            }
-                        }
+    await page.evaluate((tbodySelector: string) => {
+        const tbody = document.querySelector(tbodySelector);
+        if (!tbody) return;
+
+        const trs = Array.from(tbody.querySelectorAll('tr')).slice(0, 5);
+
+        trs.forEach(tr => {
+            const tdToMove = tr.querySelector('td.table-price.no-wrap.platform-ps-only') as HTMLTableCellElement;
+            if (tdToMove) {
+                const tds = Array.from(tr.querySelectorAll('td')) as HTMLTableCellElement[];
+                const tdIndex = tds.indexOf(tdToMove);
+                if (tdIndex !== -1 && tds.length > 1) {
+                    tr.removeChild(tdToMove);
+                    if (tds[1]) {
+                        tr.insertBefore(tdToMove, tds[1]);
+                    } else {
+                        tr.appendChild(tdToMove);
                     }
-                });
-            }, selector);
-
-            const imageBuffer = await page.screenshot({
-                clip: marginBoundingBox
-            });
-            await browser.close();
-            return { image: Buffer.from(imageBuffer), name: playerName, country: country, pricePC: pricePC, priceConsole: priceConsole, rating: playerRating, card: null, minPCPrice: pcMinPrice, minConsolePrice: consoleMinPrice };
-        } 
+                }
+            }
+        });
+    }, selector);
+    if (marginBoundingBox) {
+        const imageBuffer = await page.screenshot({
+            clip: marginBoundingBox
+        });
+        await browser.close();
+        return { image: Buffer.from(imageBuffer), name: playerName, country: country, pricePC: pricePC, priceConsole: priceConsole, rating: playerRating, card: null, minPCPrice: pcMinPrice, minConsolePrice: consoleMinPrice };
     }
-    await browser.close();
-    return undefined;
 })

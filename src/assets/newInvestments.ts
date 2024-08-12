@@ -7,6 +7,7 @@ import { dbManager } from "../utils/databaseManager"
 import { client, config } from "../index"
 import { Stream } from "stream"
 import { generateTrackerButtons, notifyInvestmentTracker } from "./investmentTracker"
+import { WithId } from "mongodb"
 
 const RETRIES = 5
 
@@ -148,15 +149,15 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
     const commandData = JSON.parse(interaction.values[0])
     const investmentData = await dbManager.Investments.getInvestmentByID(commandData.id)
     if (investmentData){
-        let pageData = await getFutbinPlayerPageData(investmentData.link)
+        let pageData = await checkWhatFunctionToRun(investmentData)
         for (let i=0; i<RETRIES; i++) {
-            if (pageData && pageData.country && pageData.pricePC && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
+            if (pageData?.pricePC && pageData.priceConsole && pageData.image) {
                 break
             }
-            pageData = await getFutbinPlayerPageData(investmentData.link)
+            pageData = await checkWhatFunctionToRun(investmentData)
         }
-        if (pageData?.country && pageData.pricePC && pageData.priceConsole && pageData.name && pageData.rating && pageData.card) {
-            const flagEmoji = await countryNameToFlag(pageData.country)
+        if (pageData?.pricePC && pageData.priceConsole && pageData.image) {
+            const flagEmoji = await countryNameToFlag(investmentData.nation)
             const profitPC = parseInt(pageData.pricePC.replace(/\D/g, '')) - parseInt(investmentData['pc price'])
             let profitPCLabel = ''
             if (profitPC > 0) {
@@ -171,7 +172,7 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
             } else {
                 profitConsoleLabel = '❌'
             }
-            let formattedText = `## ${flagEmoji} ${pageData.name.toUpperCase()} ${pageData.rating} ${flagEmoji}\n\n` +
+            let formattedText = `## ${flagEmoji} ${investmentData.name.toUpperCase()} ${investmentData.rating} ${flagEmoji}\n\n` +
                 `${config.BOT.Emoji.XBox}${config.BOT.Emoji.PS} **:** +${profitConsoleLabel} ${config.BOT.Emoji.FifaCoins}\n` +
                 `${config.BOT.Emoji.PC} **:** +${profitPCLabel} ${config.BOT.Emoji.FifaCoins}\n` +
                 `${commandData.message}\n`
@@ -207,17 +208,17 @@ export const postFirstExitMessage = withErrorHandling(async (interaction: String
     const commandData = JSON.parse(interaction.values[0])
     const investmentData = await dbManager.Investments.getInvestmentByID(commandData.id)
     if (investmentData){
-        let pageData = await getFutbinPlayerPageData(investmentData.link)
+        let pageData = await checkWhatFunctionToRun(investmentData)
         for (let i=0; i<RETRIES; i++) {
-            if (pageData && pageData.country && pageData.pricePC && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
+            if (pageData?.image) {
                 break
             }
-            pageData = await getFutbinPlayerPageData(investmentData.link)
+            pageData = await checkWhatFunctionToRun(investmentData)
         }
-        if (pageData?.country && pageData.name && pageData.rating) {
-            const flagEmoji = await countryNameToFlag(pageData.country)
+        if (pageData?.image) {
+            const flagEmoji = await countryNameToFlag(investmentData.nation)
             const formattedText = `## ✅ יציאה ראשונה ✅\n` +
-                `### ${flagEmoji} ${pageData.name.toUpperCase()} ${pageData.rating} ${flagEmoji}\n` +
+                `### ${flagEmoji} ${investmentData.name.toUpperCase()} ${investmentData.rating} ${flagEmoji}\n` +
                 `${commandData.message}\n` +
                 `**||${interaction.guild?.roles.everyone}||**`;
             if (investmentData.vip) {
@@ -243,17 +244,17 @@ export const postEarlyExitMessage = withErrorHandling(async (interaction: String
     const commandData = JSON.parse(interaction.values[0])
     const investmentData = await dbManager.Investments.getInvestmentByID(commandData.id)
     if (investmentData){
-        let pageData = await getFutbinPlayerPageData(investmentData.link)
+        let pageData = await checkWhatFunctionToRun(investmentData)
         for (let i=0; i<RETRIES; i++) {
-            if (pageData && pageData.country && pageData.pricePC && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
+            if (pageData?.image) {
                 break
             }
-            pageData = await getFutbinPlayerPageData(investmentData.link)
+            pageData = await checkWhatFunctionToRun(investmentData)
         }
-        if (pageData?.country && pageData.name && pageData.rating) {
-            const flagEmoji = await countryNameToFlag(pageData.country)
+        if (pageData?.image) {
+            const flagEmoji = await countryNameToFlag(investmentData.nation)
             const formattedText = `## זמן למכור\n` +
-                `### ${flagEmoji} ${pageData.name.toUpperCase()} ${pageData.rating} ${flagEmoji}\n` +
+                `### ${flagEmoji} ${investmentData.name.toUpperCase()} ${investmentData.rating} ${flagEmoji}\n` +
                 `${commandData.message}\n` +
                 `**||${interaction.guild?.roles.everyone}||**`;
             
@@ -318,7 +319,7 @@ export const postNewFoderInvestment = withErrorHandling(async (interaction: Comm
                 }
             }
             if (msg) {
-                const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com/stc/cheapest', pageData.country, pageData.rating, '', investmentRisk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
+                const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com/stc/cheapest', pageData.country, '', 'פודר', investmentRisk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
                 await msg.edit({ components: [await generateTrackerButtons(insertedData.insertedId.toString())] })
             }
         } else {
@@ -370,7 +371,7 @@ export const postNewTOTWInvestment = withErrorHandling(async (interaction: Comma
                 }
             }
             if (msg) {
-                const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com/stc/cheapest', pageData.country, pageData.rating, '', investmentRisk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
+                const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com/stc/cheapest', pageData.country, '', 'פודר', investmentRisk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
                 await msg.edit({ components: [await generateTrackerButtons(insertedData.insertedId.toString())] })
             }
         } else {
@@ -401,3 +402,15 @@ export const countryNameToFlag = async (countryName: string) => {
         return 'Error fetching flag';
     }
 };
+
+const checkWhatFunctionToRun = withErrorHandling(async (data: any) => {
+    if (data.version === 'פודר') {
+        if (data.name.toString().includes(' TOTW ')) {
+            return await getFutbinTOTWPageData(parseInt(data.name.toString().split(' ')[0]))
+        } else {
+            return await getFutbinFoderPageData(parseInt(data.name.toString().split(' ')[0]))
+        }
+    } else {
+        return await getFutbinPlayerPageData(data.link)
+    }
+})

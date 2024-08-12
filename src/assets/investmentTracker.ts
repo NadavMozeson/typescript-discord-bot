@@ -111,7 +111,6 @@ export const notifyInvestmentTracker = withErrorHandling(async (message: Message
                 try {
                     await user.send({ content: message.content, components: message.components, files:  Array.from(message.attachments.values()) });
                 } catch (error) {
-                    console.log(error)
                     continue
                 }
             }
