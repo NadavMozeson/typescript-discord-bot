@@ -82,6 +82,8 @@ To develop and run this Discord bot, you'll need the following software installe
    ```env
    MONGO_CONNECTION_STRING='YOUR_CONNECTION_STRING'
    DEVELOPER_DISCORD_ID=YOUR_DISCORD_USER_ID
+   YOUTUBE_CHANNEL_ID=YOUR_YOUTUBE_CHANNEL_ID
+   YOUTUBE_API_KEY=YOUR_YOUTUBE_API_KEY
    ```
 
 5. **Start the Bot**
