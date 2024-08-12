@@ -2,6 +2,7 @@ import { withErrorHandling } from '../utils/errorHandler';
 import { client } from '../index';
 import { setupAssets } from '../assets/loadAssets';
 import { setupSlashCommands } from './slashCommands';
+import { updateStats } from '../assets/statsHandler';
 
 export async function setupBasicEvents() {
 	client.on(
@@ -15,7 +16,8 @@ export async function setupBasicEvents() {
 	);
 }
 
-const StartupFunctions = withErrorHandling(async () => { 
+const StartupFunctions = withErrorHandling(async () => { 		
 	await setupSlashCommands();
 	await setupAssets();
+	updateStats();
 })
