@@ -163,6 +163,14 @@ To develop and run this Discord bot, you'll need the following software installe
           "$numberLong": "SUGGESTIONS_LOG_CHANNEL_ID"
         }
       },
+      "STATS": {
+        "StatsYouTube": {
+          "$numberLong": "1272504238940880937"
+        },
+        "StatsDiscord": {
+          "$numberLong": "1271506209891160175"
+        }
+      },
       "Ticket": {
         "$numberLong": "TICKET_OPEN_MESSAGE_CHANNEL_ID"
       },
