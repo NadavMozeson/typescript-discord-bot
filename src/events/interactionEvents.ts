@@ -3,7 +3,7 @@ import { client } from '../index';
 import { ButtonInteraction, CommandInteraction, Interaction, StringSelectMenuInteraction } from 'discord.js';
 import { handleTicketButtons } from '../assets/ticketButtons';
 import { handleOpenDMInteraction } from '../assets/privateChats';
-import { createNewInvestment, postNewInvestment } from '../assets/newInvestments';
+import { createNewInvestment, postNewInvestment, postProfitMessage, sendProfitMessage } from '../assets/newInvestments';
 
 export async function setupInteractionEvents() {
 	client.on('interactionCreate', withErrorHandling(async (interaction: Interaction) => {
@@ -28,12 +28,16 @@ const handleSlashCommands = withErrorHandling(async (interaction: CommandInterac
         await handleOpenDMInteraction(interaction)
     } else if (interaction.commandName === 'investment') {
         await createNewInvestment(interaction)
+    } else if (interaction.commandName === 'profit') {
+        await sendProfitMessage(interaction)
     }
 })
 
 const handleSelectMenuInteraction = withErrorHandling(async (interaction: StringSelectMenuInteraction) => {
     if (interaction.customId.includes('new_investment_pick_player')) {
         await postNewInvestment(interaction)
+    } else if (interaction.customId.includes('post_profit_pick_player')) {
+        await postProfitMessage(interaction)
     }
 })
 

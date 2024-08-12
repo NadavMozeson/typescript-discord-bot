@@ -5,6 +5,7 @@ export async function setupSlashCommands() {
     if (client.application){
         await client.application.commands.create(OpenDM)
         await client.application.commands.create(Investment)
+        await client.application.commands.create(Profit)
     }
 }
 
@@ -51,3 +52,11 @@ const Investment = new SlashCommandBuilder()
               .setRequired(true)
     )
     
+const Profit = new SlashCommandBuilder()
+    .setName('profit')
+    .setDescription('פרסום הודעה של רווחים על השקעה מסויימת')
+    .addStringOption(option =>
+        option.setName('הודעה')
+            .setDescription('הודעה שתשלח יחד עם ההודעת רווחים')
+            .setRequired(true)
+    )

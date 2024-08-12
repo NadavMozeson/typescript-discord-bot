@@ -50,6 +50,17 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
         return element ? element.textContent : null;
     }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-body-section.player-page-grid > div.medium-column > div.player-page-grid-inside > div.player-body-left.sidebar.gtSmartphone-only > div.standard-box.info-traits > div.info-wrapper > table > tbody > tr:nth-child(13) > td');
 
+    const pcMinPrice = await page.evaluate((selector) => {
+        const element = document.querySelector(selector);
+        return element ? element.textContent : null;
+    }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > div.price-wrapper > div.price-pr.font-small.semi-bold.text-faded.no-wrap');
+
+    const consoleMinPrice = await page.evaluate((selector) => {
+        const element = document.querySelector(selector);
+        return element ? element.textContent : null;
+    }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > div.price-wrapper > div.price-pr.font-small.semi-bold.text-faded.no-wrap');
+    
+
     const element: ElementHandle | null = await page.$(selector);
 
     if (element) {
@@ -112,7 +123,7 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
                 clip: marginBoundingBox
             });
             await browser.close();
-            return { image: Buffer.from(imageBuffer), name: playerName, country: country, pricePC: pricePC, priceConsole: priceConsole, rating: playerRating, card: cardType };
+            return { image: Buffer.from(imageBuffer), name: playerName, country: country, pricePC: pricePC, priceConsole: priceConsole, rating: playerRating, card: cardType, minPCPrice: pcMinPrice?.toString().replace(/[^\d\s]/g, '').match(/\d+(?:,\d+)*?/), minConsolePrice: consoleMinPrice?.toString().replace(/[^\d\s]/g, '').match(/\d+(?:,\d+)*?/) };
         } 
     }
     await browser.close();

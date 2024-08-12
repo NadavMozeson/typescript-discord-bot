@@ -1,4 +1,4 @@
-import { MongoClient, Collection, Db, WithId, Document, IntegerType } from 'mongodb';
+import { MongoClient, Collection, Db, WithId, Document, IntegerType, ObjectId } from 'mongodb';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -246,6 +246,15 @@ class InvestmentsManager {
         "msg": msg,
         "version": version
       })
+  }
+  async getAllInvestment(){
+    return await this.investmentsHandler.getAllData()
+  }
+  async getInvestmentByID(id: string){
+    return await this.investmentsHandler.getData({ '_id': new ObjectId(id) })
+  }
+  async deleteInvestmentByID(id: string) {
+    return await this.investmentsHandler.deleteData({ '_id': new ObjectId(id) })
   }
 }
 
