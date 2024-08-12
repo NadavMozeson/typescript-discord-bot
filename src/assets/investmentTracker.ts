@@ -72,24 +72,31 @@ export const generateTrackerButtons = withErrorHandling(async (id: string) => {
 })
 
 export const handelTrackerButtonClick = withErrorHandling(async (interaction: ButtonInteraction) => {
-    if (interaction.customId.toString().includes('_add_')){
-        const investmentID = interaction.customId.toString().split('tracker_button_add_')[1]
-        if (investmentID){
-            if (await dbManager.InvestmentsTracker.checkIfExists(interaction.user.id.toString(), investmentID.toString())){
-                await interaction.reply({ content: '❕ כבר יש לך מעקב אחרי השקעה זו ❕', ephemeral: true })
-            } else {
-                await dbManager.InvestmentsTracker.createNewTracker(interaction.user.id.toString(), investmentID.toString())
-                await interaction.reply({ content: '✅ ההשקעה נוספה לרשימת מעקב שלך ✅', ephemeral: true })
-            }
+    const member = interaction.guild?.members.fetch(interaction.user.id);
+    if (member) {
+        if (!(await member).roles.cache.has(config.SERVER.ROLES.VIP.toString())){
+            await interaction.reply({ content: '️⚠️ רק לחברי מועדון יש גישה למעקב ⚠', ephemeral: true })
+            return
         }
-    } else if (interaction.customId.toString().includes('_remove_')) {
-        const investmentID = await interaction.customId.toString().split('tracker_button_remove_')[1]
-        if (investmentID){
-            if (await dbManager.InvestmentsTracker.checkIfExists(interaction.user.id.toString(), investmentID.toString())){
-                await dbManager.InvestmentsTracker.deleteTracker(interaction.user.id.toString(), investmentID.toString())
-                await interaction.reply({ content: '❌ ההשקעה ירדה מרשימת המעקב שלך ❌', ephemeral: true })
-            } else {
-                await interaction.reply({ content: '❕ אין לך מעקב אחרי השקעה זו ❕', ephemeral: true })
+        if (interaction.customId.toString().includes('_add_')){
+            const investmentID = interaction.customId.toString().split('tracker_button_add_')[1]
+            if (investmentID){
+                if (await dbManager.InvestmentsTracker.checkIfExists(interaction.user.id.toString(), investmentID.toString())){
+                    await interaction.reply({ content: '❕ כבר יש לך מעקב אחרי השקעה זו ❕', ephemeral: true })
+                } else {
+                    await dbManager.InvestmentsTracker.createNewTracker(interaction.user.id.toString(), investmentID.toString())
+                    await interaction.reply({ content: '✅ ההשקעה נוספה לרשימת מעקב שלך ✅', ephemeral: true })
+                }
+            }
+        } else if (interaction.customId.toString().includes('_remove_')) {
+            const investmentID = await interaction.customId.toString().split('tracker_button_remove_')[1]
+            if (investmentID){
+                if (await dbManager.InvestmentsTracker.checkIfExists(interaction.user.id.toString(), investmentID.toString())){
+                    await dbManager.InvestmentsTracker.deleteTracker(interaction.user.id.toString(), investmentID.toString())
+                    await interaction.reply({ content: '❌ ההשקעה ירדה מרשימת המעקב שלך ❌', ephemeral: true })
+                } else {
+                    await interaction.reply({ content: '❕ אין לך מעקב אחרי השקעה זו ❕', ephemeral: true })
+                }
             }
         }
     }

@@ -165,10 +165,18 @@ To develop and run this Discord bot, you'll need the following software installe
       },
       "STATS": {
         "StatsYouTube": {
-          "$numberLong": "1272504238940880937"
+          "$numberLong": "YOUR_YOUTUBE_STATS_CHANNEL_ID"
         },
         "StatsDiscord": {
-          "$numberLong": "1271506209891160175"
+          "$numberLong": "YOUR_DISCORD_STATS_CHANNEL_ID"
+        }
+      },
+      "InvestmentTracker": {
+        "everyone": {
+          "$numberLong": "INVESTMENTS_TRACKER_ALL_CHANNEL_ID"
+        },
+        "VIP": {
+          "$numberLong": "INVESTMENTS_TRACKER_VIP_CHANNEL_ID"
         }
       },
       "Ticket": {
