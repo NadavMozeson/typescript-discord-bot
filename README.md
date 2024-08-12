@@ -10,6 +10,7 @@ A powerful Discord bot built with TypeScript and `discord.js`. This bot provides
 - **Private Chat:** A private chat system with server admins and a specific user
 - **VIP Auto Private Chat:** Open and close a private chat for user with a specific role
 - **Automation FIFA Investments:** Posts and handles EA FC cards investments
+- **Investments Tracking:** Custom and personal investments tracking system
 
 ## Software Requirements
 
@@ -111,6 +112,7 @@ To develop and run this Discord bot, you'll need the following software installe
 - tickets
 - private_dm
 - investments
+- investments_trackers
 
 ### Config Structure
 ```js
