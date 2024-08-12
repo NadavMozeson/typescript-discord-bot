@@ -76,8 +76,8 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
             priceConsoleLabel = parseInt(pageData.minConsolePrice.toString()).toLocaleString()
         }
         const formattedText = `## ${flagEmoji} ${pageData.name.toUpperCase()} ${pageData.rating} ${flagEmoji}\n\n` +
-            `<:xboxicon:1272444398776483910><:psicon:1272444386382184468> **:** ${priceConsoleLabel} <:fifa_coins:1272443460388913202>\n` +
-            `<:pcicon:1272443581738520577> **:** ${pricePCLabel} <:fifa_coins:1272443460388913202>\n` +
+            `${config.BOT.Emoji.XBox}${config.BOT.Emoji.PS} **:** ${priceConsoleLabel} ${config.BOT.Emoji.FifaCoins}\n` +
+            `${config.BOT.Emoji.PC} **:** ${pricePCLabel} ${config.BOT.Emoji.FifaCoins}\n` +
             `${paramsData.risk}\n` +
             `||${interaction.user} **מפרסם ההשקעה** ||\n` +
             `**||${interaction.guild?.roles.everyone}||**`;
@@ -158,8 +158,8 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
                 profitConsoleLabel = '❌'
             }
             const formattedText = `## ${flagEmoji} ${pageData.name.toUpperCase()} ${pageData.rating} ${flagEmoji}\n\n` +
-                `<:xboxicon:1272444398776483910><:psicon:1272444386382184468> **:** +${profitConsoleLabel} <:fifa_coins:1272443460388913202>\n` +
-                `<:pcicon:1272443581738520577> **:** +${profitPCLabel} <:fifa_coins:1272443460388913202>\n` +
+                `${config.BOT.Emoji.XBox}${config.BOT.Emoji.PS} **:** +${profitConsoleLabel} ${config.BOT.Emoji.FifaCoins}\n` +
+                `${config.BOT.Emoji.PC} **:** +${profitPCLabel} ${config.BOT.Emoji.FifaCoins}\n` +
                 `${commandData.message}\n` +
                 `**||${interaction.guild?.roles.everyone}||**`;
             

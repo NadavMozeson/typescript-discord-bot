@@ -88,6 +88,12 @@ interface Config {
     BOT: {
       Prefix: string;
       Token: string;
+      Emoji: {
+        PC: string,
+        PS: string,
+        XBox: string,
+        FifaCoins: string
+      }
     };
     SERVER: {
       INFO: {

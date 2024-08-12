@@ -118,6 +118,12 @@ To develop and run this Discord bot, you'll need the following software installe
   "BOT": {
     "Prefix": "!",
     "Token": "YOUR_BOT_TOKEN"
+    "Emoji": {
+      "PC": "BOT_PC_EMOJI_MARKDOWN",
+      "PS": "BOT_PS_EMOJI_MARKDOWN",
+      "XBox": "BOT_XBOX_EMOJI_MARKDOWN",
+      "FifaCoins": "BOT_FIFACOINS_EMOJI_MARKDOWN"
+    }
   },
   "SERVER": {
     "INFO": {
