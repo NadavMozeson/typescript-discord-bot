@@ -3,7 +3,7 @@ import { client } from '../index';
 import { ButtonInteraction, CommandInteraction, Interaction, StringSelectMenuInteraction } from 'discord.js';
 import { handleTicketButtons } from '../assets/ticketButtons';
 import { handleOpenDMInteraction } from '../assets/privateChats';
-import { createNewInvestment, postEarlyExitMessage, postFirstExitMessage, postNewFoderInvestment, postNewInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments';
+import { createNewInvestment, postEarlyExitMessage, postFirstExitMessage, postNewFoderInvestment, postNewInvestment, postNewTOTWInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments';
 import { handelTrackerButtonClick } from '../assets/investmentTracker';
 
 export async function setupInteractionEvents() {
@@ -35,6 +35,8 @@ const handleSlashCommands = withErrorHandling(async (interaction: CommandInterac
         await sendInvestmentListPicker(interaction)
     } else if (interaction.commandName === 'foder') {
         await postNewFoderInvestment(interaction)
+    } else if (interaction.commandName === 'totw') {
+        await postNewTOTWInvestment(interaction)
     }
 })
 

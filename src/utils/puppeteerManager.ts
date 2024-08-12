@@ -251,7 +251,7 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
             }
         });
         
-        await newPage.goto(href, { timeout: 60000 });
+        await newPage.goto(href, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
         pricePC = await newPage.evaluate((selector) => {
             const element = document.querySelector(selector);
@@ -288,6 +288,128 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
                 width: boundingBox.width,
                 height: boundingBox.height - 385
             };
+            const imageBuffer = await page.screenshot({
+                clip: marginBoundingBox
+            });
+            await browser.close();
+            return { image: Buffer.from(imageBuffer), name: playerName, country: country, pricePC: pricePC, priceConsole: priceConsole, rating: playerRating, card: null, minPCPrice: pcMinPrice, minConsolePrice: consoleMinPrice };
+        } 
+    }
+    await browser.close();
+    return undefined;
+})
+
+export const getFutbinTOTWPageData = withErrorHandling(async function (foderRating: number) {
+    const selector = '#content-container > div.extra-columns-wrapper.relative > div.players-table-wrapper.custom-scrollbar.overflow-x > table > tbody'
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    
+    const page: Page = await browser.newPage();
+
+    await page.setUserAgent(USER_AGENT_STRING);
+
+    await page.setRequestInterception(true);
+    
+    page.on('request', (request) => {
+        const url = request.url();
+        if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
+            request.abort();
+        } else {
+            request.continue();
+        }
+    });
+
+    await page.goto(`https://www.futbin.com/players?ps_price=200%2B&version=all_ifs&player_rating=${foderRating}-${foderRating}&sort=ps_price&order=asc`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForSelector(selector + ' > tr:nth-child(5)')
+
+    const playerName = `${foderRating} Rated TOTW Players`;
+    
+    const playerRating = foderRating.toString();
+    const country = 'TOTW Inform'
+
+    const href = 'https://www.futbin.com' + await page.evaluate(selector => {
+        const element = document.querySelector(`${selector} a`);
+        return element ? element.getAttribute('href') : null;
+    }, selector);
+
+    let pricePC, priceConsole, pcMinPrice, consoleMinPrice
+    if (href) {
+        const newPage = await browser.newPage();
+
+        await newPage.setUserAgent(USER_AGENT_STRING);
+
+        await newPage.setRequestInterception(true);
+        
+        newPage.on('request', (request) => {
+            const url = request.url();
+            if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
+                request.abort();
+            } else {
+                request.continue();
+            }
+        });
+        
+        await newPage.goto(href, { waitUntil: 'domcontentloaded', timeout: 60000 });
+
+        pricePC = await newPage.evaluate((selector) => {
+            const element = document.querySelector(selector);
+            return element ? element.textContent : null;
+        }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > div.column > div.price.inline-with-icon.lowest-price-1');
+    
+        priceConsole = await newPage.evaluate((selector) => {
+            const element = document.querySelector(selector);
+            return element ? element.textContent : null;
+        }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > div.column > div.price.inline-with-icon.lowest-price-1');
+        
+        pcMinPrice = await newPage.evaluate((selector) => {
+            const element = document.querySelector(selector);
+            return element ? element.textContent : null;
+        }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > div.price-wrapper > div.price-pr.font-small.semi-bold.text-faded.no-wrap');
+    
+        consoleMinPrice = await newPage.evaluate((selector) => {
+            const element = document.querySelector(selector);
+            return element ? element.textContent : null;
+        }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > div.price-wrapper > div.price-pr.font-small.semi-bold.text-faded.no-wrap');
+    
+        await newPage.close();
+    }
+
+    const element: ElementHandle | null = await page.$(selector);
+
+    if (element) {
+        const boundingBox = await element.boundingBox();
+        
+        if (boundingBox) {
+            const marginBoundingBox = {
+                x: boundingBox.x,
+                y: boundingBox.y,
+                width: boundingBox.width - 715,
+                height: boundingBox.height - 1900
+            };
+            await page.waitForSelector(selector + ' > tr:nth-child(5) > td.table-name')
+
+            await page.evaluate((tbodySelector: string) => {
+                const tbody = document.querySelector(tbodySelector);
+                if (!tbody) return;
+        
+                const trs = Array.from(tbody.querySelectorAll('tr')).slice(0, 5);
+        
+                trs.forEach(tr => {
+                    const tdToMove = tr.querySelector('td.table-price.no-wrap.platform-ps-only') as HTMLTableCellElement;
+                    if (tdToMove) {
+                        const tds = Array.from(tr.querySelectorAll('td')) as HTMLTableCellElement[];
+                        const tdIndex = tds.indexOf(tdToMove);
+                        if (tdIndex !== -1 && tds.length > 1) {
+                            tr.removeChild(tdToMove);
+                            if (tds[1]) {
+                                tr.insertBefore(tdToMove, tds[1]);
+                            } else {
+                                tr.appendChild(tdToMove);
+                            }
+                        }
+                    }
+                });
+            }, selector);
+
             const imageBuffer = await page.screenshot({
                 clip: marginBoundingBox
             });
