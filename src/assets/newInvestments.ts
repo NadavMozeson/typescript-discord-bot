@@ -1,6 +1,6 @@
 import { ActionRowBuilder, APIAttachment, Attachment, AttachmentBuilder, AttachmentPayload, BufferResolvable, CommandInteraction, JSONEncodable, Message, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextChannel } from "discord.js"
 import { withErrorHandling } from "../utils/errorHandler"
-import { getFutbinPlayerPageData, getPageContent } from "../utils/puppeteerManager"
+import { getFutbinFoderPageData, getFutbinPlayerPageData, getPageContent } from "../utils/puppeteerManager"
 import * as cheerio from 'cheerio'
 import axios from "axios"
 import { dbManager } from "../utils/databaseManager"
@@ -249,8 +249,58 @@ export const postEarlyExitMessage = withErrorHandling(async (interaction: String
     }
 })
 
+export const postNewFoderInvestment = withErrorHandling(async (interaction: CommandInteraction) => {
+    const foderRatingString = interaction.options.get('רייטינג')?.value?.toString()
+    const investmentRisk = interaction.options.get('סיכון')?.value?.toString()
+    const priceDiff = interaction.options.get('חיסור-מחיר')?.value?.toString()
+    await interaction.reply({ content: `אנא המתן בזמן שאני יוצר את ההודעה של ההשקעה`, components: [], ephemeral: true })
+    if (foderRatingString) {
+        const foderRating = parseInt(foderRatingString)
+        const pageData = await getFutbinFoderPageData(foderRating)
+        if (pageData && pageData.country && pageData.pricePC && priceDiff && investmentRisk && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
+            const flagEmoji = await countryNameToFlag(pageData.country)
+            const pricePC = parseInt(pageData.pricePC.replace(/\D/g, '')) - parseInt(priceDiff)
+            let pricePCLabel = pricePC.toLocaleString()
+            if (pricePC < parseInt(pageData.minPCPrice.toString())){
+                pricePCLabel = parseInt(pageData.minPCPrice.toString()).toLocaleString()
+            }
+            const priceConsole = parseInt(pageData.priceConsole.replace(/\D/g, '')) - parseInt(priceDiff)
+            let priceConsoleLabel = priceConsole.toLocaleString()
+            if (priceConsole < parseInt(pageData.minConsolePrice.toString())){
+                priceConsoleLabel = parseInt(pageData.minConsolePrice.toString()).toLocaleString()
+            }
+            const everyoneRole = interaction.guild?.roles.everyone
+            const formattedText = `## ${flagEmoji} ${pageData.name.toUpperCase()} ${flagEmoji}\n\n` +
+                `${config.BOT.Emoji.XBox}${config.BOT.Emoji.PS} **:** ${priceConsoleLabel} ${config.BOT.Emoji.FifaCoins}\n` +
+                `${config.BOT.Emoji.PC} **:** ${pricePCLabel} ${config.BOT.Emoji.FifaCoins}\n` +
+                `${investmentRisk}\n` +
+                `||${interaction.user} **מפרסם ההשקעה** ||\n` +
+                `**||${everyoneRole}||**`;
+    
+            const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
+            let isVIP = false
+            if (interaction.channel instanceof TextChannel && everyoneRole) {
+                const channelPerms = interaction.channel.permissionOverwrites.cache.get(everyoneRole.id);
+                if (channelPerms && channelPerms.deny.has(PermissionFlagsBits.ViewChannel)) {
+                    isVIP = true
+                }
+            }
+            if (msg) {
+                const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com/stc/cheapest', pageData.country, pageData.rating, '', investmentRisk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
+                await msg.edit({ components: [await generateTrackerButtons(insertedData.insertedId.toString())] })
+            }
+        }
+    }
+})
+
+
 export const countryNameToFlag = async (countryName: string) => {
     try {
+        if (countryName === 'TOTW Inform') {
+            return config.BOT.Emoji.TOTW.toString()
+        } else if (countryName === 'Gold Foder') {
+            return '✨'
+        }
         const response = await axios.get(`https://restcountries.com/v3.1/name/${countryName}`);
         const countryData: {altSpellings: string}[] = response.data;
     

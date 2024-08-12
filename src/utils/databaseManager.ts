@@ -93,7 +93,8 @@ interface Config {
         PC: string,
         PS: string,
         XBox: string,
-        FifaCoins: string
+        FifaCoins: string,
+        TOTW: string
       }
     };
     SERVER: {

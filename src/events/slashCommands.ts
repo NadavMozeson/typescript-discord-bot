@@ -8,6 +8,7 @@ export async function setupSlashCommands() {
         await client.application.commands.create(Profit)
         await client.application.commands.create(Exit)
         await client.application.commands.create(FirstExit)
+        await client.application.commands.create(Foder)
     }
 }
 
@@ -80,4 +81,42 @@ const FirstExit = new SlashCommandBuilder()
         option.setName('הודעה')
             .setDescription('הודעה שתשלח יחד עם ההודעת יציאה ראשונה')
             .setRequired(true)
+    )
+
+const Foder = new SlashCommandBuilder()
+    .setName('foder')
+    .setDescription('פרסום השקעה חדשה של פודרים בצאט הנוכחי')
+    .addIntegerOption(option =>
+        option.setName('רייטינג')
+            .setDescription('בחר את הרייטינג')
+            .setRequired(true)
+            .addChoices(
+                { name: '81', value: 81 },
+                { name: '82', value: 82 },
+                { name: '83', value: 83 },
+                { name: '84', value: 84 },
+                { name: '85', value: 85 },
+                { name: '86', value: 86 },
+                { name: '87', value: 87 },
+                { name: '88', value: 88 },
+                { name: '89', value: 89 },
+                { name: '90', value: 90 },
+                { name: '91', value: 91 }
+            )
+    )
+    .addStringOption(option =>
+        option.setName('סיכון')
+            .setDescription('בחר את רמת הסיכון')
+            .setRequired(true)
+            .addChoices(
+                { name: 'נמוך', value: '🟢 נמוך 🟢' },
+                { name: 'בינוני', value: '🟠 בינוני 🟠' },
+                { name: 'גבוה', value: '🔴 גבוה 🔴' },
+                { name: 'מסוכן מאוד', value: '⛔ מסוכן מאוד ⛔' }
+            )
+    )
+    .addIntegerOption(option =>
+        option.setName('חיסור-מחיר')
+              .setDescription('בכמה פחות לקנות את השחקן')
+              .setRequired(true)
     )

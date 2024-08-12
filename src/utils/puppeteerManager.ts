@@ -49,7 +49,6 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
         .split('-') 
         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).toString().replace(',', ' ');
     
-    
     const playerRating = await page.evaluate((selector) => {
         const element = document.querySelector(selector);
         return element ? element.textContent : null;
@@ -188,4 +187,114 @@ export const getPageContent = withErrorHandling(async (url: string) => {
 
     await browser.close();
     return content
+})
+
+export const getFutbinFoderPageData = withErrorHandling(async function (foderRating: number) {
+    const foderSelectors: { [key: number]: string } = {
+        81: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(19) > div.xs-column',
+        82: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(20) > div.xs-column',
+        83: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(21) > div.xs-column',
+        84: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(22) > div.xs-column',
+        85: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(23) > div.xs-column',
+        86: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(24) > div.xs-column',
+        87: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(25) > div.xs-column',
+        88: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(26) > div.xs-column',
+        89: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(27) > div.xs-column',
+        90: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(28) > div.xs-column',
+        91: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(29) > div.xs-column',
+    }
+    const selector = foderSelectors[foderRating]
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+
+    const page: Page = await browser.newPage();
+
+    await page.setUserAgent(USER_AGENT_STRING);
+
+    await page.setRequestInterception(true);
+    
+    page.on('request', (request) => {
+        const url = request.url();
+        if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
+            request.abort();
+        } else {
+            request.continue();
+        }
+    });
+
+    await page.goto('https://www.futbin.com/stc/cheapest', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForSelector(selector + ' > a:nth-child(5)')
+
+    const playerName = `${foderRating} Rated Players`;
+    
+    const playerRating = foderRating.toString();
+    const country = 'Gold Foder'
+
+    const href = 'https://www.futbin.com' + await page.evaluate(selector => {
+        const element = document.querySelector(`${selector} a`);
+        return element ? element.getAttribute('href') : null;
+    }, selector);
+
+    let pricePC, priceConsole, pcMinPrice, consoleMinPrice
+    if (href) {
+        const newPage = await browser.newPage();
+
+        await newPage.setUserAgent(USER_AGENT_STRING);
+
+        await newPage.setRequestInterception(true);
+        
+        newPage.on('request', (request) => {
+            const url = request.url();
+            if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
+                request.abort();
+            } else {
+                request.continue();
+            }
+        });
+        
+        await newPage.goto(href, { timeout: 60000 });
+
+        pricePC = await newPage.evaluate((selector) => {
+            const element = document.querySelector(selector);
+            return element ? element.textContent : null;
+        }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > div.column > div.price.inline-with-icon.lowest-price-1');
+    
+        priceConsole = await newPage.evaluate((selector) => {
+            const element = document.querySelector(selector);
+            return element ? element.textContent : null;
+        }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > div.column > div.price.inline-with-icon.lowest-price-1');
+        
+        pcMinPrice = await newPage.evaluate((selector) => {
+            const element = document.querySelector(selector);
+            return element ? element.textContent : null;
+        }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > div.price-wrapper > div.price-pr.font-small.semi-bold.text-faded.no-wrap');
+    
+        consoleMinPrice = await newPage.evaluate((selector) => {
+            const element = document.querySelector(selector);
+            return element ? element.textContent : null;
+        }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > div.price-wrapper > div.price-pr.font-small.semi-bold.text-faded.no-wrap');
+    
+        await newPage.close();
+    }
+
+    const element: ElementHandle | null = await page.$(selector);
+
+    if (element) {
+        const boundingBox = await element.boundingBox();
+        
+        if (boundingBox) {
+            const marginBoundingBox = {
+                x: boundingBox.x,
+                y: boundingBox.y,
+                width: boundingBox.width,
+                height: boundingBox.height - 385
+            };
+            const imageBuffer = await page.screenshot({
+                clip: marginBoundingBox
+            });
+            await browser.close();
+            return { image: Buffer.from(imageBuffer), name: playerName, country: country, pricePC: pricePC, priceConsole: priceConsole, rating: playerRating, card: null, minPCPrice: pcMinPrice, minConsolePrice: consoleMinPrice };
+        } 
+    }
+    await browser.close();
+    return undefined;
 })
