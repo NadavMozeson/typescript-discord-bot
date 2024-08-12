@@ -107,6 +107,7 @@ To develop and run this Discord bot, you'll need the following software installe
 - config
 - tickets
 - private_dm
+- investments
 
 ### Config Structure
 ```js
@@ -152,6 +153,15 @@ To develop and run this Discord bot, you'll need the following software installe
         "SuggestLog": {
           "$numberLong": "SUGGESTIONS_LOG_CHANNEL_ID"
         }
+      },
+      "Ticket": {
+        "$numberLong": "TICKET_OPEN_MESSAGE_CHANNEL_ID"
+      },
+      "Profit": {
+        "$numberLong": "PROFIT_MESSAGES_CHANNEL_ID"
+      },
+      "Suggest": {
+        "$numberLong": "SUGGEST_INPUT_MESSAGES_CHANNEL_ID"
       }
     }
   }
