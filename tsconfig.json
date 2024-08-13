@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
-      "target": "ESNext",
-      "module": "ESNext",
-      "moduleResolution": "node",
-      "strict": true,
-      "noImplicitAny": true,
-      "declaration": false,
-      "skipLibCheck": true,
-      "strictNullChecks": true,
-      "resolveJsonModule": true,
-      "outDir": "dist",
-      "rootDir": "src",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "strict": true,
+    "noImplicitAny": true,
+    "declaration": false,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "rootDir": "src"
   },
   "include": ["src"],
   "exclude": ["node_modules"]
