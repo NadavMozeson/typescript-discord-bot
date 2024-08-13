@@ -337,6 +337,7 @@ export const postNewTOTWInvestment = withErrorHandling(async (interaction: Comma
         const foderRating = parseInt(foderRatingString)
         let pageData = await getFutbinTOTWPageData(foderRating)
         for (let i=0; i<RETRIES; i++) {
+            console.log(pageData)
             if (pageData && pageData.country && pageData.pricePC && priceDiff && investmentRisk && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
                 break
             }

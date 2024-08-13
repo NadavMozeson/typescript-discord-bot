@@ -1,7 +1,7 @@
 import { MongoClient, Collection, Db, WithId, Document, IntegerType, ObjectId } from 'mongodb';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { disableInvestmentButtons, updateTrackerMessage } from '../assets/investmentTracker';
+import { disableInvestmentButtons } from '../assets/investmentTracker';
 
 // MongoDB connection URL and database name
 const CONNECTION_URL = process.env.MONGO_CONNECTION_STRING as string;
@@ -259,7 +259,6 @@ class InvestmentsManager {
         "version": version,
         "vip": isVIP
       })
-      await updateTrackerMessage()
       return insertedData
   }
   async getAllInvestment(){
@@ -271,7 +270,6 @@ class InvestmentsManager {
   async deleteInvestmentByID(id: string) {
     await (new InvestmentsTrackerManager()).deleteAllTrackerOfInvestment(id)
     const deletedData = await this.investmentsHandler.deleteData({ '_id': new ObjectId(id) })
-    await updateTrackerMessage()
     return deletedData
   }
 }

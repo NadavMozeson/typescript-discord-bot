@@ -10,6 +10,7 @@ export const updateTrackerMessage = withErrorHandling(async () => {
     let allMessage = '# מעקב השקעות'
     let vipMessage = '# מעקב השקעות'
     const investmentsData = await dbManager.Investments.getAllInvestment()
+    
     if (investmentsData) {
         investmentsData.sort((a, b) => {
             if (a.vip === b.vip) {
@@ -17,42 +18,57 @@ export const updateTrackerMessage = withErrorHandling(async () => {
             }
             return a.vip ? 1 : -1;
         });
+        
         for (const item of investmentsData) {
+            const investmentText = `\n### ${item.name} ${item.rating} ${await countryNameToFlag(item.nation)}\nhttps://discord.com/channels/${config.SERVER.INFO.ServerId}/${item.channel}/${item.msg}`;
+            
             if (item.vip) {
-                allMessage += '\n### ████████████ ██ :pirate_flag:' 
-                vipMessage += `\n### ${item.name} ${item.rating} ${await countryNameToFlag(item.nation)}\nhttps://discord.com/channels/${config.SERVER.INFO.ServerId}/${item.channel}/${item.msg}`
+                allMessage += '\n### ████████████ ██ :pirate_flag:' + investmentText;
+                vipMessage += investmentText;
             } else {
-                allMessage += `\n### ${item.name} ${item.rating} ${await countryNameToFlag(item.nation)}\nhttps://discord.com/channels/${config.SERVER.INFO.ServerId}/${item.channel}/${item.msg}`
-                vipMessage += `\n### ${item.name} ${item.rating} ${await countryNameToFlag(item.nation)}\nhttps://discord.com/channels/${config.SERVER.INFO.ServerId}/${item.channel}/${item.msg}`
+                allMessage += investmentText;
+                vipMessage += investmentText;
             }
         }
-        allMessage += '\n\n *ההשקעות המחוקות זמינות רק לחברי המועדון שלנו*'
-        if (allChannel instanceof TextChannel){
-            const lastAllMessage = (await allChannel.messages.fetch({ limit: 1 })).first()
-            if (lastAllMessage){
+        allMessage += '\n\n *ההשקעות המחוקות זמינות רק לחברי המועדון שלנו*';
+        
+        const sendMessages = async (channel: TextChannel, message: string) => {
+            const chunks = [];
+            while (message.length > 2000) {
+                let splitIndex = message.lastIndexOf('\n', 2000);
+                if (splitIndex === -1) splitIndex = 2000;
+                chunks.push(message.substring(0, splitIndex));
+                message = message.substring(splitIndex).trim();
+            }
+            chunks.push(message);
+
+            for (const chunk of chunks) {
+                await channel.send({ content: chunk });
+            }
+        };
+
+        if (allChannel instanceof TextChannel) {
+            const lastAllMessage = (await allChannel.messages.fetch({ limit: 1 })).first();
+            if (lastAllMessage) {
                 if (lastAllMessage.editable) {
-                    await lastAllMessage.edit({ content: allMessage })
-                } else {
-                    await allChannel.send({ content: allMessage })
+                    await lastAllMessage.delete();
                 }
-            } else {
-                await allChannel.send({ content: allMessage })
             }
+            await sendMessages(allChannel, allMessage);
         } 
-        if (vipChannel instanceof TextChannel){
-            const lastVIPMessage = (await vipChannel.messages.fetch({ limit: 1 })).first()
-            if (lastVIPMessage){
+
+        if (vipChannel instanceof TextChannel) {
+            const lastVIPMessage = (await vipChannel.messages.fetch({ limit: 1 })).first();
+            if (lastVIPMessage) {
                 if (lastVIPMessage.editable) {
-                    await lastVIPMessage.edit({ content: vipMessage })
-                } else {
-                    await vipChannel.send({ content: vipMessage })
+                    await lastVIPMessage.delete();
                 }
-            } else {
-                await vipChannel.send({ content: vipMessage })
             }
-        } 
+            await sendMessages(vipChannel, vipMessage);
+        }
     }
-})
+});
+
 
 export const generateTrackerButtons = withErrorHandling(async (id: string) => {
     const buttonAdd = new ButtonBuilder()

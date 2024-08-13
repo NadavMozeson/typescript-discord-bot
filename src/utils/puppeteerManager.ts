@@ -32,10 +32,10 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
     
     page.on('request', (request) => {
         const url = request.url();
-        if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
-            request.abort();
-        } else {
+        if (url.includes('futbin')) {
             request.continue();
+        } else {
+            request.abort();
         }
     });
 
@@ -172,10 +172,10 @@ export const getPageContent = withErrorHandling(async (url: string) => {
     
     page.on('request', (request) => {
         const url = request.url();
-        if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
-            request.abort();
-        } else {
+        if (url.includes('futbin')) {
             request.continue();
+        } else {
+            request.abort();
         }
     });
 
@@ -214,15 +214,25 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
     
     page.on('request', (request) => {
         const url = request.url();
-        if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
-            request.abort();
-        } else {
+        if (url.includes('futbin')) {
             request.continue();
+        } else {
+            request.abort();
         }
     });
 
     await page.goto('https://www.futbin.com/stc/cheapest', { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForSelector(selector + ' > a:nth-child(5)')
+    
+    Object.values(foderSelectors).forEach(async (tempSelector) => {
+        if (tempSelector != selector) {
+            await page.evaluate((selector: string) => {
+                const element = document.querySelector(selector.replace(' > div.xs-column', ''));
+                if (element) {
+                    (element as HTMLElement).style.display = 'none';
+                }
+            }, tempSelector);
+        }
+    })
 
     const playerName = `${foderRating} Rated Players`;
     
@@ -244,10 +254,10 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
         
         newPage.on('request', (request) => {
             const url = request.url();
-            if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
-                request.abort();
-            } else {
+            if (url.includes('futbin')) {
                 request.continue();
+            } else {
+                request.abort();
             }
         });
         
@@ -288,6 +298,7 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
                 width: boundingBox.width,
                 height: boundingBox.height - 385
             };
+            await page.waitForSelector(selector + ' > a:nth-child(5) > div.playersquare.round-corner-small.stc-player-thumb > img')
             const imageBuffer = await page.screenshot({
                 clip: marginBoundingBox
             });
@@ -302,7 +313,6 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
 export const getFutbinTOTWPageData = withErrorHandling(async function (foderRating: number) {
     const selector = '#content-container > div.extra-columns-wrapper.relative > div.players-table-wrapper.custom-scrollbar.overflow-x > table > tbody'
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-    
     const page: Page = await browser.newPage();
 
     await page.setUserAgent(USER_AGENT_STRING);
@@ -311,15 +321,14 @@ export const getFutbinTOTWPageData = withErrorHandling(async function (foderRati
     
     page.on('request', (request) => {
         const url = request.url();
-        if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
-            request.abort();
-        } else {
+        if (url.includes('futbin')) {
             request.continue();
+        } else {
+            request.abort();
         }
     });
 
     await page.goto(`https://www.futbin.com/players?ps_price=200%2B&version=all_ifs&player_rating=${foderRating}-${foderRating}&sort=ps_price&order=asc`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForSelector(selector + ' > tr:nth-child(5)')
 
     const playerName = `${foderRating} Rated TOTW Players`;
     
@@ -341,10 +350,10 @@ export const getFutbinTOTWPageData = withErrorHandling(async function (foderRati
         
         newPage.on('request', (request) => {
             const url = request.url();
-            if ([...BLOCKED_DOMAINS].some(domain => url.includes(domain))) {
-                request.abort();
-            } else {
+            if (url.includes('futbin')) {
                 request.continue();
+            } else {
+                request.abort();
             }
         });
         
@@ -372,34 +381,7 @@ export const getFutbinTOTWPageData = withErrorHandling(async function (foderRati
     
         await newPage.close();
     }
-
-    const marginBoundingBox = await page.evaluate((tbodySelector) => {
-        const tbody = document.querySelector(tbodySelector);
-        if (!tbody) return null;
-
-        const trs = Array.from(tbody.querySelectorAll('tr')).slice(0, 5);
-
-        if (trs.length === 0) return null;
-
-        let minX = Number.POSITIVE_INFINITY;
-        let minY = Number.POSITIVE_INFINITY;
-        let maxX = Number.NEGATIVE_INFINITY;
-        let maxY = Number.NEGATIVE_INFINITY;
-
-        trs.forEach(tr => {
-            const boundingBox = tr.getBoundingClientRect();
-            minX = Math.min(minX, boundingBox.x);
-            minY = Math.min(minY, boundingBox.y);
-            maxX = Math.max(maxX, boundingBox.x + 340);
-            maxY = Math.max(maxY, boundingBox.y + boundingBox.height);
-        });
-        return {
-        x: minX,
-        y: minY,
-        width: maxX - minX,
-        height: maxY - minY}
-    }, selector)
-        
+    
     await page.evaluate((tbodySelector: string) => {
         const tbody = document.querySelector(tbodySelector);
         if (!tbody) return;
@@ -422,11 +404,63 @@ export const getFutbinTOTWPageData = withErrorHandling(async function (foderRati
             }
         });
     }, selector);
+
+    const columnWidths = await page.evaluate((tbodySelector) => {
+        const tbody = document.querySelector(tbodySelector);
+        if (!tbody) return null;
+
+        const firstRow = tbody.querySelector('tr');
+        if (!firstRow) return null;
+
+        const columns = firstRow.querySelectorAll('td, th');
+        if (columns.length < 2) return null;
+
+        const width1 = window.getComputedStyle(columns[0]).width;
+        const width2 = window.getComputedStyle(columns[1]).width;
+
+        return {
+            firstColumnWidth: parseInt(width1, 10),
+            secondColumnWidth: parseInt(width2, 10)
+        };
+    }, selector);
+
+    const marginBoundingBox = await page.evaluate((tbodySelector, columnWidths) => {
+        const tbody = document.querySelector(tbodySelector);
+        if (!tbody) return null;
+
+        const trs = Array.from(tbody.querySelectorAll('tr')).slice(0, 5);
+        if (trs.length === 0) return null;
+
+        let minX = Number.POSITIVE_INFINITY;
+        let minY = Number.POSITIVE_INFINITY;
+        let maxX = Number.NEGATIVE_INFINITY;
+        let maxY = Number.NEGATIVE_INFINITY;
+
+        trs.forEach(tr => {
+            const boundingBox = tr.getBoundingClientRect();
+            minX = Math.min(minX, boundingBox.x);
+            minY = Math.min(minY, boundingBox.y);
+            if (columnWidths) {
+                maxX = Math.max(maxX, boundingBox.x + columnWidths.firstColumnWidth + columnWidths.secondColumnWidth);
+            }
+            maxX = Math.max(maxX, boundingBox.x + 340);
+            maxY = Math.max(maxY, boundingBox.y + boundingBox.height);
+        });
+
+        return {
+            x: minX,
+            y: minY,
+            width: maxX - minX,
+            height: maxY - minY
+        };
+    }, selector, columnWidths);
+
     if (marginBoundingBox) {
+        await page.waitForSelector(selector + ' > tr:nth-child(5) > td.table-name > a > div > img');
         const imageBuffer = await page.screenshot({
             clip: marginBoundingBox
         });
         await browser.close();
         return { image: Buffer.from(imageBuffer), name: playerName, country: country, pricePC: pricePC, priceConsole: priceConsole, rating: playerRating, card: null, minPCPrice: pcMinPrice, minConsolePrice: consoleMinPrice };
     }
-})
+});
