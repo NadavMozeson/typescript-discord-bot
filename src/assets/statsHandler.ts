@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Guild, VoiceChannel } from "discord.js";
 
 export const updateStats = withErrorHandling(async () => {
+    await updateDiscordStats()
+    await updateYouTubeStats()
     setInterval(async () => {
         await updateYouTubeStats()
         await updateDiscordStats()

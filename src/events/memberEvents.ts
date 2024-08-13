@@ -53,9 +53,11 @@ export async function setupMemberEvents() {
 }
 
 const checkIfTimeout = withErrorHandling(async (oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) => {
-  if (oldMember.communicationDisabledUntil !== newMember.communicationDisabledUntil) {
-    if (newMember.communicationDisabledUntil) {
-      await memberTimeoutEmbed(newMember.guild, newMember);
+  if (oldMember.isCommunicationDisabled() || newMember.isCommunicationDisabled()){
+    if (oldMember.communicationDisabledUntil !== newMember.communicationDisabledUntil) {
+      if (newMember.communicationDisabledUntil) {
+        await memberTimeoutEmbed(newMember.guild, newMember);
+      }
     }
   }
 })
