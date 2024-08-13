@@ -118,7 +118,7 @@ To develop and run this Discord bot, you'll need the following software installe
 ```js
 {
   "_id": {
-    "$oid": ""
+    "$oid": "AUTO_GENERATED_ID_BY_MONGODB"
   },
   "BOT": {
     "Prefix": "!",
@@ -132,64 +132,34 @@ To develop and run this Discord bot, you'll need the following software installe
   },
   "SERVER": {
     "INFO": {
-      "ServerId": {
-        "$numberLong": "SERVER_ID"
-      },
+      "ServerId": "SERVER_ID",
       "Owners": [
-        {
-          "$numberLong": "SERVER_OWNER1"
-        }
+          "SERVER_OWNER1"
       ],
       "TicketIdle": 10
     },
     "ROLES": {
-      "Member": {
-        "$numberLong": "MEMBER_ROLE_ID"
-      },
-      "VIP": {
-        "$numberLong": "VIP_ROLE_ID"
-      },
-      "Support": {
-        "$numberLong": "TICKET_SUPPORT_ROLE_ID"
-      },
-      "Manager": {
-        "$numberLong": "MANAGER_ROLE_ID"
-      }
+      "Member": "MEMBER_ROLE_ID",
+      "VIP": "VIP_ROLE_ID",
+      "Support": "TICKET_SUPPORT_ROLE_ID",
+      "Manager": "MANAGER_ROLE_ID"
     },
     "CHANNELS": {
       "LOG": {
-        "Main": {
-          "$numberLong": "MAIN_LOG_CHANNEL_ID"
-        },
-        "SuggestLog": {
-          "$numberLong": "SUGGESTIONS_LOG_CHANNEL_ID"
-        }
+        "Main": "MAIN_LOG_CHANNEL_ID",
+        "SuggestLog": "SUGGESTIONS_LOG_CHANNEL_ID"
       },
       "STATS": {
-        "StatsYouTube": {
-          "$numberLong": "YOUR_YOUTUBE_STATS_CHANNEL_ID"
-        },
-        "StatsDiscord": {
-          "$numberLong": "YOUR_DISCORD_STATS_CHANNEL_ID"
-        }
+        "StatsYouTube": "YOUR_YOUTUBE_STATS_CHANNEL_ID",
+        "StatsDiscord": "YOUR_DISCORD_STATS_CHANNEL_ID"
       },
       "InvestmentTracker": {
-        "everyone": {
-          "$numberLong": "INVESTMENTS_TRACKER_ALL_CHANNEL_ID"
-        },
-        "VIP": {
-          "$numberLong": "INVESTMENTS_TRACKER_VIP_CHANNEL_ID"
-        }
+        "everyone": "INVESTMENTS_TRACKER_ALL_CHANNEL_ID",
+        "VIP": "INVESTMENTS_TRACKER_VIP_CHANNEL_ID"
       },
-      "Ticket": {
-        "$numberLong": "TICKET_OPEN_MESSAGE_CHANNEL_ID"
-      },
-      "Profit": {
-        "$numberLong": "PROFIT_MESSAGES_CHANNEL_ID"
-      },
-      "Suggest": {
-        "$numberLong": "SUGGEST_INPUT_MESSAGES_CHANNEL_ID"
-      }
+      "Ticket": "TICKET_OPEN_MESSAGE_CHANNEL_ID",
+      "Profit": "PROFIT_MESSAGES_CHANNEL_ID",
+      "Suggest": "SUGGEST_INPUT_MESSAGES_CHANNEL_ID"
     }
   }
 }

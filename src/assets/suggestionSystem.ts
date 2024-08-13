@@ -13,7 +13,7 @@ export const handleSuggestion = withErrorHandling(async (message: Message) => {
 
 const sendSuggestion = withErrorHandling(async (message: Message) => {
     if (message.guild) {
-        const channel = await message.guild.channels.fetch(config.SERVER.CHANNELS.Suggest.toString())
+        const channel = await message.guild.channels.fetch(config.SERVER.CHANNELS.LOG.SuggestLog.toString())
         if (channel && channel.isTextBased()) {
             await channel.send({ content: `${message.author}:\n${message.content}` })
         }

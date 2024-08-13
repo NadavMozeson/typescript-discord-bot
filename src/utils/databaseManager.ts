@@ -1,4 +1,4 @@
-import { MongoClient, Collection, Db, WithId, Document, IntegerType, ObjectId } from 'mongodb';
+import { MongoClient, Collection, Db, WithId, Document, ObjectId, Long } from 'mongodb';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { disableInvestmentButtons } from '../assets/investmentTracker';
