@@ -19,5 +19,5 @@ export async function setupBasicEvents() {
 const StartupFunctions = withErrorHandling(async () => { 		
 	await setupSlashCommands();
 	await setupAssets();
-	updateStats();
+	await updateStats();
 })

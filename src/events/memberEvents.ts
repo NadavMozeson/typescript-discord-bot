@@ -4,6 +4,7 @@ import { withErrorHandling } from '../utils/errorHandler';
 import { config } from '../index';
 import { client } from '../index';
 import { createPrivateChat, deletePrivateChat } from '../assets/privateChats';
+import { updateStats } from '../assets/statsHandler';
 
 type GuildBanEvent = {
   user: { bot: boolean; id: string; };
@@ -22,6 +23,7 @@ export async function setupMemberEvents() {
       } else {
         throw new Error('Failed to add member role to user ' + member.displayName);
       }
+      await updateStats();
     }),
   );
 

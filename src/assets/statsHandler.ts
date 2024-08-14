@@ -6,10 +6,6 @@ import { Guild, VoiceChannel } from "discord.js";
 export const updateStats = withErrorHandling(async () => {
     await updateDiscordStats()
     await updateYouTubeStats()
-    setInterval(async () => {
-        await updateYouTubeStats()
-        await updateDiscordStats()
-    }, 3 * 60 * 60 * 1000); 
 })
 
 const updateYouTubeStats = withErrorHandling(async () => {
