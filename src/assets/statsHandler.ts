@@ -6,6 +6,10 @@ import { Guild, VoiceChannel } from "discord.js";
 export const updateStats = withErrorHandling(async () => {
     await updateDiscordStats()
     await updateYouTubeStats()
+    setInterval(async () => {
+        await updateYouTubeStats()
+        await updateDiscordStats()
+    }, 3 * 60 * 60 * 1000); 
 })
 
 const updateYouTubeStats = withErrorHandling(async () => {
@@ -22,7 +26,8 @@ const updateYouTubeStats = withErrorHandling(async () => {
     const subCountStr = `${subsInK}.${remainder}K : סאבים ביוטיוב`;
     const channel = await client.channels.fetch(config.SERVER.CHANNELS.STATS.StatsYouTube.toString())
     if(channel && channel instanceof VoiceChannel){
-        await channel.setName(subCountStr)
+        const changedChannel = await channel.setName(subCountStr)
+        console.log((new Date()).toLocaleTimeString() + changedChannel.name)
     }
 })
 
@@ -36,7 +41,8 @@ const updateDiscordStats = withErrorHandling(async () => {
         client.user?.setActivity(countStr)
         const channel = await client.channels.fetch(config.SERVER.CHANNELS.STATS.StatsDiscord.toString())
         if(channel && channel instanceof VoiceChannel){
-            await channel.setName(countStr)
+            const changedChannel = await channel.setName(countStr)
+            console.log((new Date()).toLocaleTimeString() + changedChannel.name)
         }
     }
 })
