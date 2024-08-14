@@ -7,7 +7,6 @@ import { dbManager } from "../utils/databaseManager"
 import { client, config } from "../index"
 import { Stream } from "stream"
 import { generateTrackerButtons, notifyInvestmentTracker } from "./investmentTracker"
-import { writeFile } from 'fs'
 
 const RETRIES = 5
 
