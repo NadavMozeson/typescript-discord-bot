@@ -7,7 +7,7 @@ import { dbManager } from "../utils/databaseManager"
 import { client, config } from "../index"
 import { Stream } from "stream"
 import { generateTrackerButtons, notifyInvestmentTracker } from "./investmentTracker"
-import { WithId } from "mongodb"
+import { writeFile } from 'fs'
 
 const RETRIES = 5
 
@@ -93,7 +93,6 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
             `${paramsData.risk}\n` +
             `||${interaction.user} **מפרסם ההשקעה** ||\n` +
             `**||${everyoneRole}||**`;
-
         const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
         let isVIP = false
         if (interaction.channel instanceof TextChannel && everyoneRole) {
@@ -337,7 +336,6 @@ export const postNewTOTWInvestment = withErrorHandling(async (interaction: Comma
         const foderRating = parseInt(foderRatingString)
         let pageData = await getFutbinTOTWPageData(foderRating)
         for (let i=0; i<RETRIES; i++) {
-            console.log(pageData)
             if (pageData && pageData.country && pageData.pricePC && priceDiff && investmentRisk && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
                 break
             }
@@ -362,7 +360,7 @@ export const postNewTOTWInvestment = withErrorHandling(async (interaction: Comma
                 `${investmentRisk}\n` +
                 `||${interaction.user} **מפרסם ההשקעה** ||\n` +
                 `**||${everyoneRole}||**`;
-    
+            
             const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
             let isVIP = false
             if (interaction.channel instanceof TextChannel && everyoneRole) {
