@@ -69,7 +69,6 @@ export const updateTrackerMessage = withErrorHandling(async () => {
     }
 });
 
-
 export const generateTrackerButtons = withErrorHandling(async (id: string) => {
     const buttonAdd = new ButtonBuilder()
       .setCustomId(`tracker_button_add_${id}`)

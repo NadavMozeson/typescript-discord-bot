@@ -1,4 +1,4 @@
-import { ActionRowBuilder, APIAttachment, Attachment, AttachmentBuilder, AttachmentPayload, BufferResolvable, CommandInteraction, JSONEncodable, Message, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextChannel } from "discord.js"
+import { ActionRowBuilder, APIAttachment, Attachment, AttachmentBuilder, AttachmentPayload, BufferResolvable, CommandInteraction, EmbedBuilder, JSONEncodable, Message, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextChannel } from "discord.js"
 import { withErrorHandling } from "../utils/errorHandler"
 import { getFutbinFoderPageData, getFutbinPlayerPageData, getFutbinTOTWPageData, getPageContent } from "../utils/puppeteerManager"
 import * as cheerio from 'cheerio'
@@ -92,6 +92,7 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
             `${paramsData.risk}\n` +
             `||${interaction.user} **מפרסם ההשקעה** ||\n` +
             `**||${everyoneRole}||**`;
+            
         const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
         let isVIP = false
         if (interaction.channel instanceof TextChannel && everyoneRole) {

@@ -21,11 +21,13 @@
     "node-schedule": "^2.1.1",
     "puppeteer": "^23.0.2",
     "sharp": "^0.33.4",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.2.0",
     "@types/puppeteer": "^7.0.4",
+    "@types/uuid": "^10.0.0",
     "tsx": "^4.17.0"
   }
 }
