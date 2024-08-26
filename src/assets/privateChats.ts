@@ -79,6 +79,8 @@ export const deletePrivateChat = withErrorHandling(async (user: User) => {
                     }
                 }
             }
+        } else {
+            await dbManager.DM.deleteChat(channelId)
         }
     }
 })
