@@ -67,14 +67,16 @@ export const deletePrivateChat = withErrorHandling(async (user: User) => {
     if (await dbManager.DM.checkIfChatExists(user.id)) {
         const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId.toString())
         const channelId = await dbManager.DM.getChatChannel(user.id)
-        const channel = await guild.channels.fetch(channelId.toString())
-        if (channel){
-            await channel.delete()
-            await dbManager.DM.deleteChat(channelId)
-            const category = guild.channels.cache.find(category => category.name === '🔒 | צאטים פרטיים | 🔒')
-            if (category instanceof CategoryChannel) {
-                if (category.children.cache.size === 0) {
-                    await category.delete()
+        if (channelId) {
+            const channel = await guild.channels.fetch(channelId.toString())
+            if (channel){
+                await channel.delete()
+                await dbManager.DM.deleteChat(channelId)
+                const category = guild.channels.cache.find(category => category.name === '🔒 | צאטים פרטיים | 🔒')
+                if (category instanceof CategoryChannel) {
+                    if (category.children.cache.size === 0) {
+                        await category.delete()
+                    }
                 }
             }
         }
