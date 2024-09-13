@@ -5,6 +5,7 @@ import { handleTicketButtons } from '../assets/ticketButtons';
 import { handleOpenDMInteraction } from '../assets/privateChats';
 import { createNewInvestment, postEarlyExitMessage, postFirstExitMessage, postNewFoderInvestment, postNewInvestment, postNewTOTWInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments';
 import { handelTrackerButtonClick } from '../assets/investmentTracker';
+import { handleTeamSuggest } from '../assets/teamUpgrades';
 
 export async function setupInteractionEvents() {
 	client.on('interactionCreate', withErrorHandling(async (interaction: Interaction) => {
@@ -37,6 +38,8 @@ const handleSlashCommands = withErrorHandling(async (interaction: CommandInterac
         await postNewFoderInvestment(interaction)
     } else if (interaction.commandName === 'totw') {
         await postNewTOTWInvestment(interaction)
+    } else if (interaction.commandName === 'team-suggest') {
+        await handleTeamSuggest(interaction)
     }
 })
 

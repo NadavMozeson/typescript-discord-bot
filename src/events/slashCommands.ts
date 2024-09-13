@@ -10,6 +10,7 @@ export async function setupSlashCommands() {
         await client.application.commands.create(FirstExit)
         await client.application.commands.create(Foder)
         await client.application.commands.create(TOTW)
+        await client.application.commands.create(TeamSuggest)
     }
 }
 
@@ -158,4 +159,21 @@ const TOTW = new SlashCommandBuilder()
         option.setName('חיסור-מחיר')
               .setDescription('בכמה פחות לקנות את השחקן')
               .setRequired(true)
+    )
+
+const TeamSuggest = new SlashCommandBuilder()
+    .setName('team-suggest')
+    .setDescription('פתיחה או סגירה של צאט שדרוג קבוצות')
+    .addStringOption(option =>
+        option.setName('פעולה')
+            .setDescription('בחר אם לפתוח או לסגור צאט')
+            .setRequired(true)
+            .addChoices(
+                { name: 'פתח צאט', value: 'open' },
+                { name: 'סגור צאט', value: 'close' }
+            )
+    )
+    .addStringOption(option =>
+        option.setName('קבוצות')
+            .setDescription('כמה קבוצות להגריל')
     )
