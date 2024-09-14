@@ -12,13 +12,14 @@ export const handleTeamSuggest = withErrorHandling(async (interaction: CommandIn
         await interaction.editReply({ content: 'החדר שדרוג קבוצות נפתח' })
     } else {
         await interaction.reply({ ephemeral: true, content: 'סוגר את הצאט' })
+        await denyMessages()
+        await sendEndMessage()
         const inputData = interaction.options.get('קבוצות')?.value?.toString()
         if (inputData) {
             await preformRaffle(parseInt(inputData), interaction)
         } else {
             await preformRaffle(10, interaction)
         }
-        await denyMessages()
         await interaction.editReply({ content: 'החדר שדרוג קבוצות נסגר' })
     }
 })
@@ -112,5 +113,17 @@ const preformRaffle = withErrorHandling(async (amount: number, interaction: Comm
             msgContent += `\n${msg[1].url}`
         }
         await interaction.followUp({ ephemeral: true, content: msgContent })
+    }
+})
+
+const sendEndMessage = withErrorHandling(async () => {
+    const channel = await client.channels.fetch(config.SERVER.CHANNELS.TeamRating)
+    if (channel instanceof TextChannel) {
+        const messageString = '# ⛔ נסגר מחזור שדרוג הקבוצות הנוכחי ⛔\n' +
+        'לא ניתן יותר לשלוח קבוצות לשדרוג קבוצות\n' +
+        'אנא המתינו בסבלנות עד שנפתח מחזור חדש\n' +
+        'תודה מראש לכלל המשתתפים❤️\n\n' +
+        `||${channel.guild.roles.everyone}||`
+        await channel.send({ content: messageString })
     }
 })
