@@ -239,8 +239,8 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
             const element = document.querySelector(`${selector} > a:nth-child(${index})`);
             return element ? element.getAttribute('href') : null;
         }, selector, i);
-    
-        if (href) {
+        if (href.includes('/player/')) {
+            console.log(href)
             const playerData = await getFutbinPlayerPageData(href);
             if (playerData && playerData.pricePC && playerData.priceConsole && playerData.minPCPrice && playerData.minConsolePrice) {
                 pricePC = playerData.pricePC   
@@ -258,12 +258,20 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
         const boundingBox = await element.boundingBox();
         
         if (boundingBox) {
-            const marginBoundingBox = {
+            let marginBoundingBox = {
                 x: boundingBox.x,
                 y: boundingBox.y,
                 width: boundingBox.width,
-                height: boundingBox.height - 385
+                height: boundingBox.height
             };
+            if (boundingBox.height > 385) {
+                marginBoundingBox = {
+                    x: boundingBox.x,
+                    y: boundingBox.y,
+                    width: boundingBox.width,
+                    height: boundingBox.height - 385
+                };
+            }
             const imageBuffer = await page.screenshot({
                 clip: marginBoundingBox
             });
@@ -312,7 +320,7 @@ export const getFutbinTOTWPageData = withErrorHandling(async function (foderRati
             return element ? element.getAttribute('href') : null;
         }, selector, i);
     
-        if (href) {
+        if (href.includes('/player/')) {
             const playerData = await getFutbinPlayerPageData(href);
             if (playerData && playerData.pricePC && playerData.priceConsole && playerData.minPCPrice && playerData.minConsolePrice) {
                 pricePC = playerData.pricePC   
