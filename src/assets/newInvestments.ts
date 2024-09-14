@@ -67,12 +67,12 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
     const paramsData = JSON.parse(interaction.values[0])
     await interaction.update({ content: `אנא המתן בזמן שאני יוצר את ההודעה של ההשקעה`, components: [] })
     let pageData = await getFutbinPlayerPageData('https://www.futbin.com' + paramsData.url)
-        for (let i=0; i<RETRIES; i++) {
-            if (pageData && pageData.country && pageData.pricePC && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
-                break
-            }
-            pageData = await getFutbinPlayerPageData('https://www.futbin.com' + paramsData.url)
+    for (let i=0; i<RETRIES; i++) {
+        if (pageData && pageData.country && pageData.pricePC && pageData.minPCPrice && pageData.priceConsole && pageData.minConsolePrice) {
+            break
         }
+        pageData = await getFutbinPlayerPageData('https://www.futbin.com' + paramsData.url)
+    }
     if (pageData?.country && pageData.minPCPrice && pageData.minConsolePrice && pageData.pricePC && pageData.priceConsole && pageData.name && pageData.rating && pageData.card) {
         const flagEmoji = await countryNameToFlag(pageData.country)
         const pricePC = parseInt(pageData.pricePC.replace(/\D/g, '')) - parseInt(paramsData.priceDiff)
@@ -92,7 +92,6 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
             `${paramsData.risk}\n` +
             `||${interaction.user} **מפרסם ההשקעה** ||\n` +
             `**||${everyoneRole}||**`;
-            
         const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
         let isVIP = false
         if (interaction.channel instanceof TextChannel && everyoneRole) {
