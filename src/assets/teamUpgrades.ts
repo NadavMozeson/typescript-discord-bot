@@ -94,8 +94,8 @@ const preformRaffle = withErrorHandling(async (amount: number, interaction: Comm
             }
         }
         let amountVIP = vipMessages.length
-        if (amountVIP >= Math.ceil(amount * 0.5)) {
-            amountVIP = Math.ceil(amount * 0.5)
+        if (amountVIP >= Math.ceil(amount * 0.33)) {
+            amountVIP = Math.ceil(amount * 0.33)
         } 
         for (let i = 0; i < amountVIP; i++) {
             const index = Math.floor(Math.random() * vipMessages.length)
