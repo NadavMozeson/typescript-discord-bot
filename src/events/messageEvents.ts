@@ -3,12 +3,14 @@ import { withErrorHandling } from '../utils/errorHandler';
 import { client, config } from '../index';
 import { messageDeleteEmbed, messageEditEmbed } from '../components/logsEmbed';
 import { handleSuggestion } from '../assets/suggestionSystem';
+import { handleVotingMessage } from '../assets/votingReaction';
 
 export async function setupMessagesEvents() {
 	client.on(
 		'messageCreate',
 		withErrorHandling(async (message: Message) => {
             await handleSuggestion(message)
+            await handleVotingMessage(message)
 		}),
 	);
 

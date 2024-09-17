@@ -94,7 +94,9 @@ interface Config {
         PS: string,
         XBox: string,
         FifaCoins: string,
-        TOTW: string
+        TOTW: string,
+        Like: string,
+        Dislike: string
       }
     };
     SERVER: {
@@ -138,6 +140,7 @@ interface Config {
         Suggest: string;
         TeamRating: string;
         DailyLogin: string;
+        VotingChannel: string[];
       };
     };
 }
