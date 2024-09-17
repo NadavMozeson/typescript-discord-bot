@@ -11,6 +11,7 @@ export async function setupSlashCommands() {
         await client.application.commands.create(Foder)
         await client.application.commands.create(TOTW)
         await client.application.commands.create(TeamSuggest)
+        await client.application.commands.create(FAQ)
     }
 }
 
@@ -176,4 +177,18 @@ const TeamSuggest = new SlashCommandBuilder()
     .addStringOption(option =>
         option.setName('קבוצות')
             .setDescription('כמה קבוצות להגריל')
+    )
+
+const FAQ = new SlashCommandBuilder()
+    .setName('faq-new')
+    .setDescription('הוספת שאלה נפוצה עם תשובה')
+    .addStringOption(option =>
+        option.setName('שאלה')
+            .setDescription('מה השאלה')
+            .setRequired(true)
+    )
+    .addStringOption(option =>
+        option.setName('תשובה')
+            .setDescription('מה התשובה')
+            .setRequired(true)
     )

@@ -141,6 +141,7 @@ interface Config {
         TeamRating: string;
         DailyLogin: string;
         VotingChannel: string[];
+        FAQ: string;
       };
     };
 }
@@ -297,11 +298,25 @@ class InvestmentsTrackerManager {
   }
 }
 
+class FAQManager {
+  FAQHandler = new DatabaseHandler('questions')
+  async createNewQuestion(question: string, answer: string) {
+    return await this.FAQHandler.addData({ 'question': question, 'answer': answer })
+  }
+  async getAllQuestions() {
+    return await this.FAQHandler.getAllData()
+  }
+  async getAnswer(id: string) {
+    return await this.FAQHandler.getData({ '_id': new ObjectId(id) })
+  }
+}
+
 class DatabaseManagerClass {
     Tickets = new TicketsManager()
     DM = new PrivateChatManager()
     Investments = new InvestmentsManager()
     InvestmentsTracker = new InvestmentsTrackerManager()
+    FAQ = new FAQManager()
 }
 
 export const dbManager = new DatabaseManagerClass()
