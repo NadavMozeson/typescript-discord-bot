@@ -1,4 +1,4 @@
-import { EmbedBuilder, Guild, Message, GuildMember, PartialMessage } from 'discord.js';
+import { EmbedBuilder, Guild, Message, GuildMember, PartialMessage, TextChannel } from 'discord.js';
 import { withErrorHandling } from '../utils/errorHandler.js';
 import { config, client } from '../index.js';
 import { getSafeURL, sendPlainEmbed } from './embedsBuilder.js';
@@ -124,6 +124,9 @@ export const newVIPMember = withErrorHandling(async (member: GuildMember) => {
 	if (member.user.displayAvatarURL()) {
 		embed.setThumbnail(member.user.displayAvatarURL());
 	}
-
-	await sendPlainEmbed(config.SERVER.CHANNELS.LOG.VIPLog, embed);
+	
+	const channel = await client.channels.fetch(config.SERVER.CHANNELS.LOG.VIPLog)
+	if (channel instanceof TextChannel) {
+		await channel.send({ content: `${member.guild.roles.everyone}`, embeds: [embed] });
+	}
 });
