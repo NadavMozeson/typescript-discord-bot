@@ -118,6 +118,7 @@ interface Config {
           SuggestLog: string;
           StaffForms: string;
           EditorForms: string;
+          VIPLog: string;
         };
         FirstExit: {
           everyone: string;

@@ -112,3 +112,18 @@ export const memberTimeoutEmbed = withErrorHandling(async (guild: Guild, user: G
 
 	await sendPlainEmbed(config.SERVER.CHANNELS.LOG.Main, embed);
 });
+
+export const newVIPMember = withErrorHandling(async (member: GuildMember) => {
+	const embed = new EmbedBuilder()
+		.setTitle('✨ חבר פרימיום חדש ✨')
+		.setColor('#FFD700')
+		.setTimestamp()
+		.setFooter({ text: member.guild.name, iconURL: getSafeURL(member.guild.iconURL()) })
+		.addFields({ name: '👤 משתמש 👤', value: `${member.user}` });
+
+	if (member.user.displayAvatarURL()) {
+		embed.setThumbnail(member.user.displayAvatarURL());
+	}
+
+	await sendPlainEmbed(config.SERVER.CHANNELS.LOG.VIPLog, embed);
+});

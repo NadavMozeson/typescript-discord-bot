@@ -1,5 +1,5 @@
 import { Guild, GuildMember, PartialGuildMember, Role } from 'discord.js';
-import { memberBanEmbed, memberUnbanEmbed, memberTimeoutEmbed } from '../components/logsEmbed';
+import { memberBanEmbed, memberUnbanEmbed, memberTimeoutEmbed, newVIPMember } from '../components/logsEmbed';
 import { withErrorHandling } from '../utils/errorHandler';
 import { config } from '../index';
 import { client } from '../index';
@@ -67,6 +67,7 @@ const checkForVIPUpdate = withErrorHandling(async (oldMember: GuildMember | Part
   if (role) {
     if (!oldMember.roles.cache.has(role.id) && newMember.roles.cache.has(role.id)) {
       await createPrivateChat(newMember.user, true)
+      await newVIPMember(newMember)
     } else if (oldMember.roles.cache.has(role.id) && !newMember.roles.cache.has(role.id)) {
       await deletePrivateChat(newMember.user)
     }
