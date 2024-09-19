@@ -2,6 +2,7 @@ import { CategoryChannel, ChannelType, CommandInteraction, PermissionsBitField, 
 import { withErrorHandling } from "../utils/errorHandler";
 import { dbManager } from "../utils/databaseManager";
 import { client, config } from "../index"
+import { newVIPMember } from "../components/logsEmbed";
 
 export const handleOpenDMInteraction = withErrorHandling(async (interaction: CommandInteraction) => {
     const user = interaction.options.get('משתמש')?.user
@@ -83,4 +84,26 @@ export const deletePrivateChat = withErrorHandling(async (user: User) => {
             await dbManager.DM.deleteChat(channelId)
         }
     }
+})
+
+export const syncVIP = withErrorHandling(async () => {
+    setInterval(async () => {
+        const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId)
+        const membersWithRole = guild.members.cache.filter(member => member.roles.cache.has(config.SERVER.ROLES.VIP));
+        for (const member of membersWithRole) {
+            if (!(await dbManager.DM.checkIfChatExists(member[1].id))) {
+                await createPrivateChat(member[1].user, true)
+                await newVIPMember(member[1])
+            }
+        }
+        const allDMs = await dbManager.DM.getAll()
+        for (const dm of allDMs) {
+            if (dm.VIP) {
+                const member = await guild.members.fetch(dm.user)
+                if (!(member.roles.cache.has(config.SERVER.ROLES.VIP))) {
+                    await deletePrivateChat(member.user) 
+                }
+            }
+        }
+    }, 60 * 60 * 1000); 
 })

@@ -4,6 +4,7 @@ import { setupAssets } from '../assets/loadAssets';
 import { setupSlashCommands } from './slashCommands';
 import { updateStats } from '../assets/statsHandler';
 import { handleFAQMessage } from '../assets/FAQ';
+import { syncVIP } from '../assets/privateChats';
 
 export async function setupBasicEvents() {
 	client.on(
@@ -20,6 +21,7 @@ export async function setupBasicEvents() {
 const StartupFunctions = withErrorHandling(async () => { 
 	await setupSlashCommands();
 	await setupAssets();
-	await handleFAQMessage()		
+	await handleFAQMessage();
+	syncVIP();
 	updateStats();
 })
