@@ -118,9 +118,12 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
             textElement.style.transform = 'translateX(-50%)';
             textElement.style.color = 'white';
             textElement.style.fontFamily = 'Arial';
+            textElement.style.fontWeight = 'bold';
             textElement.style.padding = '5px';
+            textElement.style.marginBottom = '5px';
             textElement.style.fontSize = '35px';
             textElement.style.zIndex = '9999';
+            textElement.style.whiteSpace = 'nowrap';
             document.body.appendChild(textElement);
         }, watermarkText);
 
