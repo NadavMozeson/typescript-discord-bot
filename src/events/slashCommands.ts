@@ -12,6 +12,7 @@ export async function setupSlashCommands() {
         await client.application.commands.create(TOTW)
         await client.application.commands.create(TeamSuggest)
         await client.application.commands.create(FAQ)
+        await client.application.commands.create(DeleteInvestment)
     }
 }
 
@@ -192,3 +193,7 @@ const FAQ = new SlashCommandBuilder()
             .setDescription('מה התשובה')
             .setRequired(true)
     )
+
+const DeleteInvestment = new SlashCommandBuilder()
+    .setName('delete_investment')
+    .setDescription('מחיקת השקעה מהמסד נתונים')

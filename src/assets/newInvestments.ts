@@ -114,6 +114,8 @@ export const sendInvestmentListPicker = withErrorHandling(async (interaction: Co
         customID = 'first_exit_pick_player'
     } else if (interaction.commandName === 'exit') {
         customID = 'early_exit_pick_player'
+    } else if (interaction.commandName === 'delete_investment') {
+        customID = 'delete_pick_player'
     }
     const messageInput = interaction.options.get('הודעה')?.value?.toString()
     const allInvestmentsData = (await dbManager.Investments.getAllInvestment())
@@ -376,6 +378,13 @@ export const postNewTOTWInvestment = withErrorHandling(async (interaction: Comma
             await interaction.editReply({ content: 'הייתה שגיאה עם יצירת ההודעה, אנא נסה שוב' })
         }
     }
+})
+
+export const deleteInvestment = withErrorHandling(async (interaction: StringSelectMenuInteraction) => {
+    const commandData = JSON.parse(interaction.values[0])
+    await dbManager.Investments.deleteInvestmentByID(commandData.id)
+    await interaction.update({ content: 'נמחקה ההשקעה מהמסד נתונים' })
+
 })
 
 export const countryNameToFlag = async (countryName: string) => {

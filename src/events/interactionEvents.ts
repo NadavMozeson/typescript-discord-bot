@@ -3,7 +3,7 @@ import { client } from '../index';
 import { ButtonInteraction, CommandInteraction, Interaction, StringSelectMenuInteraction } from 'discord.js';
 import { handleTicketButtons } from '../assets/ticketButtons';
 import { handleOpenDMInteraction } from '../assets/privateChats';
-import { createNewInvestment, postEarlyExitMessage, postFirstExitMessage, postNewFoderInvestment, postNewInvestment, postNewTOTWInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments';
+import { createNewInvestment, deleteInvestment, postEarlyExitMessage, postFirstExitMessage, postNewFoderInvestment, postNewInvestment, postNewTOTWInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments';
 import { handelTrackerButtonClick } from '../assets/investmentTracker';
 import { handleTeamSuggest } from '../assets/teamUpgrades';
 import { handleNewFAQ, handleNewFAQClick } from '../assets/FAQ';
@@ -35,7 +35,7 @@ const handleSlashCommands = withErrorHandling(async (interaction: CommandInterac
         await handleOpenDMInteraction(interaction)
     } else if (interaction.commandName === 'investment') {
         await createNewInvestment(interaction)
-    } else if (interaction.commandName === 'profit' || interaction.commandName === 'exit' || interaction.commandName === 'first-exit') {
+    } else if (interaction.commandName === 'profit' || interaction.commandName === 'exit' || interaction.commandName === 'first-exit' || interaction.commandName === 'delete_investment') {
         await sendInvestmentListPicker(interaction)
     } else if (interaction.commandName === 'foder') {
         await postNewFoderInvestment(interaction)
@@ -57,6 +57,8 @@ const handleSelectMenuInteraction = withErrorHandling(async (interaction: String
         await postFirstExitMessage(interaction)
     } else if (interaction.customId.includes('early_exit_pick_player')) {
         await postEarlyExitMessage(interaction)
+    } else if (interaction.customId.includes('delete_pick_player')) {
+        await deleteInvestment(interaction)
     }
 })
 
