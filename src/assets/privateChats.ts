@@ -69,41 +69,23 @@ export const deletePrivateChat = withErrorHandling(async (user: User) => {
         const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId.toString())
         const channelId = await dbManager.DM.getChatChannel(user.id)
         if (channelId) {
-            const channel = await guild.channels.fetch(channelId.toString())
-            if (channel){
-                await channel.delete()
-                await dbManager.DM.deleteChat(channelId)
-                const category = guild.channels.cache.find(category => category.name === '🔒 | צאטים פרטיים | 🔒')
-                if (category instanceof CategoryChannel) {
-                    if (category.children.cache.size === 0) {
-                        await category.delete()
+            try {
+                const channel = await guild.channels.fetch(channelId.toString())
+                if (channel){
+                    await channel.delete()
+                    await dbManager.DM.deleteChat(channelId)
+                    const category = guild.channels.cache.find(category => category.name === '🔒 | צאטים פרטיים | 🔒')
+                    if (category instanceof CategoryChannel) {
+                        if (category.children.cache.size === 0) {
+                            await category.delete()
+                        }
                     }
                 }
+            } catch (err) {
+                return 
             }
         } else {
             await dbManager.DM.deleteChat(channelId)
         }
     }
-})
-
-export const syncVIP = withErrorHandling(async () => {
-    setInterval(async () => {
-        const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId)
-        const membersWithRole = guild.members.cache.filter(member => member.roles.cache.has(config.SERVER.ROLES.VIP));
-        for (const member of membersWithRole) {
-            if (!(await dbManager.DM.checkIfChatExists(member[1].id))) {
-                await createPrivateChat(member[1].user, true)
-                await newVIPMember(member[1])
-            }
-        }
-        const allDMs = await dbManager.DM.getAll()
-        for (const dm of allDMs) {
-            if (dm.VIP) {
-                const member = await guild.members.fetch(dm.user)
-                if (!(member.roles.cache.has(config.SERVER.ROLES.VIP))) {
-                    await deletePrivateChat(member.user) 
-                }
-            }
-        }
-    }, 60 * 60 * 1000); 
 })
