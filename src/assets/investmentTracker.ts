@@ -138,22 +138,27 @@ export const disableInvestmentButtons = withErrorHandling(async (investmentID: s
     if (investmentData) {
         const channel = await client.channels.fetch(investmentData.channel.toString())
         if (channel && channel instanceof TextChannel) {
-            const message = await channel.messages.fetch(investmentData.msg.toString())
-            const buttonAdd = new ButtonBuilder()
-                .setCustomId(`disabled_add_tracker_button_${investmentID}`)
-                .setLabel('ביצוע מעקב')
-                .setStyle(ButtonStyle.Secondary)
-                .setDisabled(true);
-      
-            const buttonRemove = new ButtonBuilder()
-                .setCustomId(`disabled_remove_tracker_button_${investmentID}`)
-                .setLabel('הסרת מעקב')
-                .setStyle(ButtonStyle.Secondary)
-                .setDisabled(true);
-            
-            const actionRow = new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(buttonAdd, buttonRemove);
-            await message.edit({ components: [actionRow] })
+            const allMessages = await channel.messages.fetch()
+            if (allMessages.has(investmentData.msg.toString())){
+                const message = allMessages.get(investmentData.msg.toString())
+                if (message) {
+                    const buttonAdd = new ButtonBuilder()
+                        .setCustomId(`disabled_add_tracker_button_${investmentID}`)
+                        .setLabel('ביצוע מעקב')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(true);
+        
+                    const buttonRemove = new ButtonBuilder()
+                        .setCustomId(`disabled_remove_tracker_button_${investmentID}`)
+                        .setLabel('הסרת מעקב')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(true);
+                    
+                    const actionRow = new ActionRowBuilder<ButtonBuilder>()
+                        .addComponents(buttonAdd, buttonRemove);
+                    await message.edit({ components: [actionRow] })
+                }
+            }
         }
     }
 })
