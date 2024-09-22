@@ -384,6 +384,8 @@ export const countryNameToFlag = async (countryName: string) => {
             return config.BOT.Emoji.TOTW.toString()
         } else if (countryName === 'Gold Foder') {
             return '✨'
+        } else if (countryName.toLowerCase() === 'england') {
+            return ':england:'
         }
         const response = await axios.get(`https://restcountries.com/v3.1/name/${countryName}`);
         const countryData: {altSpellings: string}[] = response.data;
