@@ -69,8 +69,9 @@ export const deletePrivateChat = withErrorHandling(async (user: User) => {
         const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId.toString())
         const channelId = await dbManager.DM.getChatChannel(user.id)
         if (channelId) {
-            try {
-                const channel = await guild.channels.fetch(channelId.toString())
+            const allChannels = await guild.channels.fetch()
+            if (allChannels.has(channelId.toString())) {
+                const channel = allChannels.get(channelId.toString())
                 if (channel){
                     await channel.delete()
                     await dbManager.DM.deleteChat(channelId)
@@ -81,9 +82,7 @@ export const deletePrivateChat = withErrorHandling(async (user: User) => {
                         }
                     }
                 }
-            } catch (err) {
-                return 
-            }
+            } 
         } else {
             await dbManager.DM.deleteChat(channelId)
         }
