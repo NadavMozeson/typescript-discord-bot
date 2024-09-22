@@ -26,8 +26,7 @@ const updateYouTubeStats = withErrorHandling(async () => {
     const subCountStr = `${subsInK}.${remainder}K : סאבים ביוטיוב`;
     const channel = await client.channels.fetch(config.SERVER.CHANNELS.STATS.StatsYouTube.toString())
     if(channel && channel instanceof VoiceChannel){
-        const changedChannel = await channel.setName(subCountStr)
-        console.log((new Date()).toLocaleTimeString() + changedChannel.name)
+        await channel.setName(subCountStr)
     }
 })
 
@@ -41,8 +40,7 @@ const updateDiscordStats = withErrorHandling(async () => {
         client.user?.setActivity(countStr)
         const channel = await client.channels.fetch(config.SERVER.CHANNELS.STATS.StatsDiscord.toString())
         if(channel && channel instanceof VoiceChannel){
-            const changedChannel = await channel.setName(countStr)
-            console.log((new Date()).toLocaleTimeString() + changedChannel.name)
+            await channel.setName(countStr)
         }
     }
 })
