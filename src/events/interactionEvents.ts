@@ -3,7 +3,7 @@ import { client } from '../index';
 import { ButtonInteraction, CommandInteraction, Interaction, StringSelectMenuInteraction } from 'discord.js';
 import { handleTicketButtons } from '../assets/ticketButtons';
 import { handleOpenDMInteraction } from '../assets/privateChats';
-import { createNewInvestment, deleteInvestment, postEarlyExitMessage, postFirstExitMessage, postNewFoderInvestment, postNewInvestment, postNewTOTWInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments';
+import { confirmDeleteInvestment, createNewInvestment, deleteInvestment, postEarlyExitMessage, postFirstExitMessage, postNewFoderInvestment, postNewInvestment, postNewTOTWInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments';
 import { handelTrackerButtonClick } from '../assets/investmentTracker';
 import { handleTeamSuggest } from '../assets/teamUpgrades';
 import { handleNewFAQ, handleNewFAQClick } from '../assets/FAQ';
@@ -27,6 +27,8 @@ const handleButtons = withErrorHandling(async (interaction: ButtonInteraction) =
         await handelTrackerButtonClick(interaction)
     } else if (interaction.customId.toString().includes('faq-click-')) {
         await handleNewFAQClick(interaction)
+    } else if (interaction.customId.toString().includes('confirm_delete_inv_')) {
+        await confirmDeleteInvestment(interaction)
     }
 })
 

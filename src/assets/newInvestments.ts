@@ -1,4 +1,4 @@
-import { ActionRowBuilder, APIAttachment, Attachment, AttachmentBuilder, AttachmentPayload, BufferResolvable, CommandInteraction, EmbedBuilder, JSONEncodable, Message, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextChannel } from "discord.js"
+import { ActionRowBuilder, APIAttachment, Attachment, AttachmentBuilder, AttachmentPayload, BufferResolvable, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder, JSONEncodable, Message, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextChannel } from "discord.js"
 import { withErrorHandling } from "../utils/errorHandler"
 import { getFutbinFoderPageData, getFutbinPlayerPageData, getFutbinTOTWPageData, getPageContent } from "../utils/puppeteerManager"
 import * as cheerio from 'cheerio'
@@ -382,9 +382,24 @@ export const postNewTOTWInvestment = withErrorHandling(async (interaction: Comma
 
 export const deleteInvestment = withErrorHandling(async (interaction: StringSelectMenuInteraction) => {
     const commandData = JSON.parse(interaction.values[0])
-    await dbManager.Investments.deleteInvestmentByID(commandData.id)
-    await interaction.update({ content: 'נמחקה ההשקעה מהמסד נתונים' })
+    const data = await dbManager.Investments.getInvestmentByID(commandData.id)
+    if (data) {
+        const buttonAdd = new ButtonBuilder()
+            .setCustomId(`confirm_delete_inv_${data._id}`)
+            .setLabel('אישור מחיקה')
+            .setStyle(ButtonStyle.Danger);
+    
+        const actionRow = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(buttonAdd);
 
+        await interaction.update({ content: `## אישור מחיקה\nהודעה: https://discord.com/channels/${config.SERVER.INFO.ServerId}/${data.channel}/${data.msg}`, components: [actionRow] })
+    }
+})
+
+export const confirmDeleteInvestment = withErrorHandling(async (interaction: ButtonInteraction) => {
+    const id = interaction.customId.split('confirm_delete_inv_')[1]
+    await dbManager.Investments.deleteInvestmentByID(id)
+    await interaction.update({ content: 'נמחקה ההשקעה מהמסד נתונים', components: [] })
 })
 
 export const countryNameToFlag = async (countryName: string) => {
