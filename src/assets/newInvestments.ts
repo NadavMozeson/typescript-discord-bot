@@ -157,16 +157,15 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
             pageData = await checkWhatFunctionToRun(investmentData)
         }
         if (pageData?.pricePC && pageData.priceConsole && pageData.image) {
-            console.log(pageData)
             const flagEmoji = await countryNameToFlag(investmentData.nation)
-            const profitPC = parseInt(pageData.pricePC.replace(/\D/g, '')) - parseInt(investmentData['pc price'])
+            const profitPC = parseInt(pageData.pricePC.replace(/\D/g, '')) - parseInt(investmentData['pc price'].replace(/\D/g, ''))
             let profitPCLabel = ''
             if (profitPC > 0) {
                 profitPCLabel = profitPC.toLocaleString()
             } else {
                 profitPCLabel = '❌'
             }
-            const profitConsole = parseInt(pageData.priceConsole.replace(/\D/g, '')) - parseInt(investmentData['console price'])
+            const profitConsole = parseInt(pageData.priceConsole.replace(/\D/g, '')) - parseInt(investmentData['console price'].replace(/\D/g, ''))
             let profitConsoleLabel = ''
             if (profitConsole > 0) {
                 profitConsoleLabel = profitConsole.toLocaleString()
