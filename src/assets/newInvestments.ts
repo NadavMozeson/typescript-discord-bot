@@ -177,10 +177,10 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
                 `${config.BOT.Emoji.PC} **:** +${profitPCLabel} ${config.BOT.Emoji.FifaCoins}\n` +
                 `${commandData.message}\n`
             if (investmentData.vip) {
-                formattedText += `\n**:money_with_wings:השקעה זו עלתה רק לחברי המועדון:money_with_wings:**\n` +
+                formattedText += `\n**:money_with_wings:השקעה זו עלתה רק לפרימיום:money_with_wings:**\n` +
                     `איך אתם יכולים להיכנס?\n` +
                     `כל הפרטים כאן:point_down:\n` +
-                    `https://discord.com/channels/919996404368306227/1271487467727360022\n`
+                    `https://discord.com/channels/919996404368306227/1287753477535039549\n`
             }
             formattedText += `\n**||${interaction.guild?.roles.everyone}||**`;
             
