@@ -55,7 +55,7 @@ export const createNewTicket = withErrorHandling(async (interaction: ButtonInter
             } else if (reason.includes('vip')) {
                 await newTicketEmbed(interaction.user.id, ticketChannel.id, 'רכישת VIP')
             } else if (reason.includes('rules')) {
-                await newTicketEmbed(interaction.user.id, ticketChannel.id, 'הרפת חוקים')
+                await newTicketEmbed(interaction.user.id, ticketChannel.id, 'הפרת חוקים')
             } else {
                 await newTicketEmbed(interaction.user.id, ticketChannel.id, 'כללי')
             }
