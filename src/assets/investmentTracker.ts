@@ -80,8 +80,20 @@ export const generateTrackerButtons = withErrorHandling(async (id: string) => {
       .setLabel('הסרת מעקב')
       .setStyle(ButtonStyle.Danger);
     
+    const data = await dbManager.Investments.getInvestmentByID(id);
+    if (data && data.link) {
+        const buttonFutbin = new ButtonBuilder()
+            .setLabel('לקלף בפוטבין')
+            .setStyle(ButtonStyle.Link)
+            .setURL(data.link);
+        
+        const actionRow = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(buttonAdd, buttonRemove, buttonFutbin);
+        return actionRow
+    }
+    
     const actionRow = new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(buttonAdd, buttonRemove);
+            .addComponents(buttonAdd, buttonRemove);
     
     return actionRow
 })
