@@ -52,10 +52,14 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
         return nationLink ? nationLink.textContent?.trim() : null;
     });    
     
+    await page.waitForSelector('body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > div.column > div.price.inline-with-icon.lowest-price-1')
+
     const pricePC = await page.evaluate((selector) => {
         const element = document.querySelector(selector);
         return element ? element.textContent : null;
     }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > div.column > div.price.inline-with-icon.lowest-price-1');
+
+    await page.waitForSelector('body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > div.column > div.price.inline-with-icon.lowest-price-1')
 
     const priceConsole = await page.evaluate((selector) => {
         const element = document.querySelector(selector);
