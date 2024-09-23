@@ -157,6 +157,7 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
             pageData = await checkWhatFunctionToRun(investmentData)
         }
         if (pageData?.pricePC && pageData.priceConsole && pageData.image) {
+            console.log(pageData)
             const flagEmoji = await countryNameToFlag(investmentData.nation)
             const profitPC = parseInt(pageData.pricePC.replace(/\D/g, '')) - parseInt(investmentData['pc price'])
             let profitPCLabel = ''
