@@ -9,6 +9,7 @@ import { Stream } from "stream"
 import { generateTrackerButtons, notifyInvestmentTracker } from "./investmentTracker"
 
 const RETRIES = 5
+let MESSAGES_BUFFER: { [key: string]: string } = {}
 
 export const createNewInvestment = withErrorHandling(async (interaction: CommandInteraction) => {
     const playerSearchName = interaction.options.get('שחקן')?.value?.toString()
@@ -118,6 +119,9 @@ export const sendInvestmentListPicker = withErrorHandling(async (interaction: Co
         customID = 'delete_pick_player'
     }
     const messageInput = interaction.options.get('הודעה')?.value?.toString()
+    if (interaction.id.toString() && messageInput){
+        MESSAGES_BUFFER[interaction.id.toString()] = messageInput
+    }
     const allInvestmentsData = (await dbManager.Investments.getAllInvestment())
     const result: { label:string, value: string }[] = []
     for (const investment of allInvestmentsData) {
@@ -136,7 +140,7 @@ export const sendInvestmentListPicker = withErrorHandling(async (interaction: Co
             .addOptions(menusOptions[i].map(player => 
                     new StringSelectMenuOptionBuilder()
                     .setLabel(player.label)
-                    .setValue(JSON.stringify({ id: player.value, message: messageInput }))
+                    .setValue(JSON.stringify({ id: player.value, interaction: interaction.id.toString() }))
                 )
             );
         components[i].addComponents(selectMenu)
@@ -175,7 +179,7 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
             let formattedText = `## ${flagEmoji} ${investmentData.name.toUpperCase()} ${investmentData.rating} ${flagEmoji}\n\n` +
                 `${config.BOT.Emoji.XBox}${config.BOT.Emoji.PS} **:** +${profitConsoleLabel} ${config.BOT.Emoji.FifaCoins}\n` +
                 `${config.BOT.Emoji.PC} **:** +${profitPCLabel} ${config.BOT.Emoji.FifaCoins}\n` +
-                `${commandData.message}\n`
+                `${MESSAGES_BUFFER[commandData.interaction]}\n`
             if (investmentData.vip) {
                 formattedText += `\n**:money_with_wings:השקעה זו עלתה רק לפרימיום:money_with_wings:**\n` +
                     `איך אתם יכולים להיכנס?\n` +
@@ -219,7 +223,7 @@ export const postFirstExitMessage = withErrorHandling(async (interaction: String
             const flagEmoji = await countryNameToFlag(investmentData.nation)
             const formattedText = `## ✅ יציאה ראשונה ✅\n` +
                 `### ${flagEmoji} ${investmentData.name.toUpperCase()} ${investmentData.rating} ${flagEmoji}\n` +
-                `${commandData.message}\n` +
+                `${MESSAGES_BUFFER[commandData.interaction]}\n` +
                 `**||${interaction.guild?.roles.everyone}||**`;
             if (investmentData.vip) {
                 const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.VIP.toString())
@@ -255,7 +259,7 @@ export const postEarlyExitMessage = withErrorHandling(async (interaction: String
             const flagEmoji = await countryNameToFlag(investmentData.nation)
             const formattedText = `## זמן למכור\n` +
                 `### ${flagEmoji} ${investmentData.name.toUpperCase()} ${investmentData.rating} ${flagEmoji}\n` +
-                `${commandData.message}\n` +
+                `${MESSAGES_BUFFER[commandData.interaction]}\n` +
                 `**||${interaction.guild?.roles.everyone}||**`;
             
             if (investmentData.vip) {
