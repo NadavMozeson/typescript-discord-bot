@@ -1,13 +1,16 @@
-import puppeteer, { BoundingBox, ElementHandle, Page } from 'puppeteer';
+import puppeteer, { ElementHandle, Page } from 'puppeteer';
 import { client, config } from '../index'
 import { withErrorHandling } from './errorHandler';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 const USER_AGENT_STRING = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 
 export const getFutbinPlayerPageData = withErrorHandling(async function (url : string) {
     const selector = 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div'
     const selectorsToHide = ['body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > a', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > a', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-card-section > div.player-card-wrapper > div > div', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-card-section > div.player-stats-evolution-toggle.row']
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const currentDir = dirname(fileURLToPath(import.meta.url));
+    const browser = currentDir.includes('sw33t') ? (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })) : (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], executablePath: process.env.BROWSER_PATH }))
 
     const page: Page = await browser.newPage();
 
@@ -159,7 +162,8 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
 })
 
 export const getPageContent = withErrorHandling(async (url: string) => {
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const currentDir = dirname(fileURLToPath(import.meta.url));
+    const browser = currentDir.includes('sw33t') ? (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })) : (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], executablePath: process.env.BROWSER_PATH }))
     const page: Page = await browser.newPage();
 
     await page.setUserAgent(USER_AGENT_STRING);
@@ -200,7 +204,8 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
         91: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(29) > div.xs-column',
     }
     const selector = foderSelectors[foderRating]
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const currentDir = dirname(fileURLToPath(import.meta.url));
+    const browser = currentDir.includes('sw33t') ? (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })) : (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], executablePath: process.env.BROWSER_PATH }))
 
     const page: Page = await browser.newPage();
 
@@ -292,7 +297,8 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
 
 export const getFutbinTOTWPageData = withErrorHandling(async function (foderRating: number) {
     const selector = '#content-container > div.extra-columns-wrapper.relative > div.players-table-wrapper.custom-scrollbar.overflow-x > table > tbody'
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const currentDir = dirname(fileURLToPath(import.meta.url));
+    const browser = currentDir.includes('sw33t') ? (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })) : (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], executablePath: process.env.BROWSER_PATH }))
     const page: Page = await browser.newPage();
 
     await page.setUserAgent(USER_AGENT_STRING);
