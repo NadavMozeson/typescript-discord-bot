@@ -60,9 +60,7 @@ const createFAQMessage = withErrorHandling(async () => {
 
 const addAllButtons = withErrorHandling(async () => {
     const msg = await getFAQMessage()
-    console.log(msg)
     if (msg instanceof Message) {
-        console.log("in")
         const allQuestionsData = await dbManager.FAQ.getAllQuestions()
         const buttonsRow = new ActionRowBuilder<ButtonBuilder>()
         for (const question of allQuestionsData) {
@@ -73,6 +71,7 @@ const addAllButtons = withErrorHandling(async () => {
             buttonsRow.addComponents(tempButton)
         }
         if (buttonsRow.components.length > 0 && buttonsRow.components.length < 6){
+            console.log(msg.editable)
             await msg.edit({ components: [buttonsRow] })
         }
     }
