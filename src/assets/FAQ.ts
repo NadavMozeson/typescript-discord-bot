@@ -61,17 +61,30 @@ const createFAQMessage = withErrorHandling(async () => {
 const addAllButtons = withErrorHandling(async () => {
     const msg = await getFAQMessage()
     if (msg instanceof Message) {
-        const allQuestionsData = await dbManager.FAQ.getAllQuestions()
-        const buttonsRow = new ActionRowBuilder<ButtonBuilder>()
-        for (const question of allQuestionsData) {
+        const allQuestionsData = await dbManager.FAQ.getAllQuestions();
+        const rows = []; 
+
+        let buttonsRow = new ActionRowBuilder<ButtonBuilder>(); 
+        for (const [index, question] of allQuestionsData.entries()) {
             const tempButton = new ButtonBuilder()
                 .setCustomId(`faq-click-${question._id}`)
                 .setLabel(question.question)
-                .setStyle(ButtonStyle.Secondary)
-            buttonsRow.addComponents(tempButton)
+                .setStyle(ButtonStyle.Secondary);
+            
+            buttonsRow.addComponents(tempButton);
+
+            if ((index + 1) % 5 === 0) {
+                rows.push(buttonsRow);
+                buttonsRow = new ActionRowBuilder<ButtonBuilder>();
+            }
         }
-        if (buttonsRow.components.length > 0){
-            await msg.edit({ components: [buttonsRow] })
+
+        if (buttonsRow.components.length > 0) {
+            rows.push(buttonsRow);
+        }
+
+        if (rows.length > 0) {
+            await msg.edit({ components: rows });
         }
     }
 })
