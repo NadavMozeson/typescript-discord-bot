@@ -41,9 +41,8 @@ const getFAQMessage = withErrorHandling(async () => {
         if (messages.size === 0) {
             await createFAQMessage()
         }
-        console.log(messages)
-        console.log(messages.last)
-        return channel.lastMessage
+        console.log(messages.last())
+        return messages.last()
     }
 })
 
