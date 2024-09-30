@@ -62,7 +62,6 @@ const addAllButtons = withErrorHandling(async () => {
     const msg = await getFAQMessage()
     if (msg instanceof Message) {
         const allQuestionsData = await dbManager.FAQ.getAllQuestions()
-        console.log(allQuestionsData)
         const buttonsRow = new ActionRowBuilder<ButtonBuilder>()
         for (const question of allQuestionsData) {
             const tempButton = new ButtonBuilder()
@@ -71,8 +70,7 @@ const addAllButtons = withErrorHandling(async () => {
                 .setStyle(ButtonStyle.Secondary)
             buttonsRow.addComponents(tempButton)
         }
-        if (buttonsRow.components.length > 0 && buttonsRow.components.length < 6){
-            console.log(msg.editable)
+        if (buttonsRow.components.length > 0){
             await msg.edit({ components: [buttonsRow] })
         }
     }
