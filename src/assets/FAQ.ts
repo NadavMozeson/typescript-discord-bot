@@ -37,10 +37,12 @@ export const handleFAQMessage = withErrorHandling(async () => {
 const getFAQMessage = withErrorHandling(async () => {
     const channel = await client.channels.fetch(config.SERVER.CHANNELS.FAQ)
     if (channel instanceof TextChannel) {
-        if ((await channel.messages.fetch()).size === 0) {
+        const messages = await channel.messages.fetch()
+        if (messages.size === 0) {
             await createFAQMessage()
         }
-        console.log(channel.lastMessage)
+        console.log(messages)
+        console.log(messages.last)
         return channel.lastMessage
     }
 })
