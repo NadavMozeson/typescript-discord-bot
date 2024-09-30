@@ -41,7 +41,6 @@ const getFAQMessage = withErrorHandling(async () => {
         if (messages.size === 0) {
             await createFAQMessage()
         }
-        console.log(messages.last())
         return messages.last()
     }
 })
@@ -61,7 +60,9 @@ const createFAQMessage = withErrorHandling(async () => {
 
 const addAllButtons = withErrorHandling(async () => {
     const msg = await getFAQMessage()
+    console.log(msg)
     if (msg instanceof Message) {
+        console.log("in")
         const allQuestionsData = await dbManager.FAQ.getAllQuestions()
         const buttonsRow = new ActionRowBuilder<ButtonBuilder>()
         for (const question of allQuestionsData) {
