@@ -37,6 +37,7 @@ export const handleFAQMessage = withErrorHandling(async () => {
 const getFAQMessage = withErrorHandling(async () => {
     const channel = await client.channels.fetch(config.SERVER.CHANNELS.FAQ)
     if (channel instanceof TextChannel) {
+        console.log(channel)
         if ((await channel.messages.fetch()).size === 0) {
             await createFAQMessage()
         }
@@ -59,7 +60,6 @@ const createFAQMessage = withErrorHandling(async () => {
 
 const addAllButtons = withErrorHandling(async () => {
     const msg = await getFAQMessage()
-    console.log(msg)
     if (msg instanceof Message) {
         const allQuestionsData = await dbManager.FAQ.getAllQuestions()
         const buttonsRow = new ActionRowBuilder<ButtonBuilder>()
