@@ -59,6 +59,7 @@ const createFAQMessage = withErrorHandling(async () => {
 
 const addAllButtons = withErrorHandling(async () => {
     const msg = await getFAQMessage()
+    console.log(msg)
     if (msg instanceof Message) {
         const allQuestionsData = await dbManager.FAQ.getAllQuestions()
         const buttonsRow = new ActionRowBuilder<ButtonBuilder>()
