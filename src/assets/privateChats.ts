@@ -28,52 +28,44 @@ export const createPrivateChat = withErrorHandling(async (user: User, isVIP: boo
     if (!(await dbManager.DM.checkIfChatExists(user.id))) {
         const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId.toString());
 
-        let category = guild.channels.cache.find(category => category.name.startsWith('🔒 | צאטים פרטיים | 🔒') && category.type === ChannelType.GuildCategory);
-
-        if (!category) {
+        let categories = guild.channels.cache.filter(category => category.name.startsWith('🔒 | צאטים פרטיים | 🔒') && category.type === ChannelType.GuildCategory && category.children.cache.size  < 1);
+        let category = null;
+        if (categories.size === 0) {
             category = await guild.channels.create({
                 name: '🔒 | צאטים פרטיים | 🔒',
                 type: ChannelType.GuildCategory
             });
             await category?.setPosition(0);
+        } else {
+            category = categories.first()
         }
-
-        if (category instanceof CategoryChannel && category.children.cache.size >= 50) {
-            const existingCategories = guild.channels.cache.filter(cat => 
-                cat.name.startsWith('🔒 | צאטים פרטיים | 🔒') && cat.type === ChannelType.GuildCategory
-            ).size;
-            category = await guild.channels.create({
-                name: `🔒 | צאטים פרטיים | 🔒 (${existingCategories + 1})`,
-                type: ChannelType.GuildCategory
+        if (category) {
+            const dmChannel = await guild.channels.create({
+                name: `${user.username} צאט פרטי`,
+                type: ChannelType.GuildText,
+                parent: category.id,
+                permissionOverwrites: [
+                    {
+                        id: guild.roles.everyone.id,
+                        deny: [PermissionsBitField.Flags.ViewChannel],
+                    },
+                    {
+                        id: user.id,
+                        allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
+                    }
+                ],
             });
-            await category?.setPosition(0);
-        }
-
-        const dmChannel = await guild.channels.create({
-            name: `${user.username} צאט פרטי`,
-            type: ChannelType.GuildText,
-            parent: category.id,
-            permissionOverwrites: [
-                {
-                    id: guild.roles.everyone.id,
-                    deny: [PermissionsBitField.Flags.ViewChannel],
-                },
-                {
-                    id: user.id,
-                    allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
-                }
-            ],
-        });
-
-        if (dmChannel) {
-            const message = `שלום ${user},\n` +
-                            "תודה רבה על תמיכתך בערוץ וברוך הבא לקבוצת חברי המועדון שלנו!\n" +
-                            "בצאט זה אתה יכול לשלוח לנו הודעות בצורה פרטנית ולקבל מענה באופן אישי על כל שאלה או מחשבה.\n" +
-                            "בנוסף, זמינים לך החדרים במתחם החברי מועדון שלנו. מוזמן לטייל שם ולראות תוכן אשר זמין רק לכם!\n" +
-                            "שוב, ברוך הבא ותודה על תמיכתך❤️";
-            await dmChannel.send(message);
-            await dbManager.DM.createNewChat(user.id, dmChannel.id, isVIP);
-        }
+    
+            if (dmChannel) {
+                const message = `שלום ${user},\n` +
+                                "תודה רבה על תמיכתך בערוץ וברוך הבא לקבוצת חברי המועדון שלנו!\n" +
+                                "בצאט זה אתה יכול לשלוח לנו הודעות בצורה פרטנית ולקבל מענה באופן אישי על כל שאלה או מחשבה.\n" +
+                                "בנוסף, זמינים לך החדרים במתחם החברי מועדון שלנו. מוזמן לטייל שם ולראות תוכן אשר זמין רק לכם!\n" +
+                                "שוב, ברוך הבא ותודה על תמיכתך❤️";
+                await dmChannel.send(message);
+                await dbManager.DM.createNewChat(user.id, dmChannel.id, isVIP);
+            }
+        }      
     }
 });
 
