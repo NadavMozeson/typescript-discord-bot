@@ -1,5 +1,5 @@
 import { EmbedBuilder, Interaction, ButtonBuilder, ActionRowBuilder, ButtonStyle, TextChannel, NewsChannel, ButtonInteraction } from 'discord.js';
-import { sendAdvancedEmbed, sendPlainEmbed } from './embedsBuilder.js';
+import { sendPlainEmbed } from './embedsBuilder.js';
 import { config, client } from '../index.js'
 import { withErrorHandling } from '../utils/errorHandler.js';
 

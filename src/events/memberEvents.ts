@@ -3,6 +3,7 @@ import { memberBanEmbed, memberUnbanEmbed, memberTimeoutEmbed, newVIPMember } fr
 import { withErrorHandling } from '../utils/errorHandler.js';
 import { config, client } from '../index.js';
 import { createPrivateChat, deletePrivateChat } from '../assets/privateChats.js';
+import { updateUserForVIP } from '../assets/syncVIPMembers.js';
 
 type GuildBanEvent = {
   user: { bot: boolean; id: string; };
@@ -13,13 +14,17 @@ export async function setupMemberEvents() {
   client.on(
     'guildMemberAdd',
     withErrorHandling(async (member: GuildMember) => {
-      const role = member.guild.roles.cache.find(
-        (role: Role) => role.id === config.SERVER.ROLES.Member.toString()
-      );
-      if (role) {
-        await member.roles.add(role);
+      if (member.guild.id === config.SERVER.INFO.ServerId){
+        const role = member.guild.roles.cache.find(
+          (role: Role) => role.id === config.SERVER.ROLES.Member.toString()
+        );
+        if (role) {
+          await member.roles.add(role);
+        } else {
+          throw new Error('Failed to add member role to user ' + member.displayName);
+        }
       } else {
-        throw new Error('Failed to add member role to user ' + member.displayName);
+        await updateUserForVIP(member.id)
       }
     }),
   );
@@ -62,7 +67,7 @@ const checkIfTimeout = withErrorHandling(async (oldMember: GuildMember | Partial
 })
 
 const checkForVIPUpdate = withErrorHandling(async (oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) => {
-  const role = await oldMember.guild.roles.fetch(config.SERVER.ROLES.VIP.toString())
+  const role = await oldMember.guild.roles.fetch(config.VIP_SERVER.ROLES.VIP.toString())
   if (role) {
     if (!oldMember.roles.cache.has(role.id) && newMember.roles.cache.has(role.id)) {
       await createPrivateChat(newMember.user, true)

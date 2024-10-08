@@ -145,6 +145,19 @@ interface Config {
         FAQ: string;
       };
     };
+    VIP_SERVER: {
+      INFO: {
+        ServerId: string;
+        Owners: string[];
+      };
+      ROLES: {
+        VIP: string;
+      };
+      CHANNELS: {
+        FirstExit: string;
+        Profit: string;
+      };
+    }
 }
 
 const isConfig = (data: any): data is Config => {

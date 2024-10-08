@@ -99,9 +99,9 @@ export const generateTrackerButtons = withErrorHandling(async (id: string) => {
 })
 
 export const handelTrackerButtonClick = withErrorHandling(async (interaction: ButtonInteraction) => {
-    const member = interaction.guild?.members.fetch(interaction.user.id);
+    const member = await interaction.guild?.members.fetch(interaction.user.id);
     if (member) {
-        if (!(await member).roles.cache.has(config.SERVER.ROLES.VIP.toString())){
+        if ((member.guild.id === config.SERVER.INFO.ServerId && !member.roles.cache.has(config.SERVER.ROLES.VIP)) || (member.guild.id === config.VIP_SERVER.INFO.ServerId && !member.roles.cache.has(config.VIP_SERVER.ROLES.VIP))){
             await interaction.reply({ content: '️⚠️ רק לחברי מועדון יש גישה למעקב ⚠', ephemeral: true })
             return
         }
@@ -116,7 +116,7 @@ export const handelTrackerButtonClick = withErrorHandling(async (interaction: Bu
                 }
             }
         } else if (interaction.customId.toString().includes('_remove_')) {
-            const investmentID = await interaction.customId.toString().split('tracker_button_remove_')[1]
+            const investmentID = interaction.customId.toString().split('tracker_button_remove_')[1]
             if (investmentID){
                 if (await dbManager.InvestmentsTracker.checkIfExists(interaction.user.id.toString(), investmentID.toString())){
                     await dbManager.InvestmentsTracker.deleteTracker(interaction.user.id.toString(), investmentID.toString())

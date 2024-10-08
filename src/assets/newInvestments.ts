@@ -94,13 +94,7 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
             `||${interaction.user} **מפרסם ההשקעה** ||\n` +
             `**||${everyoneRole}||**`;
         const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
-        let isVIP = false
-        if (interaction.channel instanceof TextChannel && everyoneRole) {
-            const channelPerms = interaction.channel.permissionOverwrites.cache.get(everyoneRole.id);
-            if (channelPerms && channelPerms.deny.has(PermissionFlagsBits.ViewChannel)) {
-                isVIP = true
-            }
-        }
+        const isVIP = interaction.guildId === config.VIP_SERVER.INFO.ServerId
         if (msg) {
             const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com' + paramsData.url, pageData.country, pageData.rating, pageData.card, paramsData.risk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
             await msg.edit({ components: [await generateTrackerButtons(insertedData.insertedId.toString())] })
@@ -197,7 +191,11 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
                     files.push(attachment);
                 }
                 const profitChannel = await client.channels.fetch(config.SERVER.CHANNELS.Profit.toString())
-                if (profitChannel instanceof TextChannel) {
+                const vipChannel = await client.channels.fetch(config.VIP_SERVER.CHANNELS.Profit.toString())
+                if ((profitChannel instanceof TextChannel) && (vipChannel instanceof TextChannel)) {
+                    if (investmentData.vip) {
+                        await vipChannel.send({ content: formattedText, files });
+                    }
                     const profitMsg = await profitChannel.send({ content: formattedText, files });
                     await notifyInvestmentTracker(profitMsg, commandData.id)
                 }
@@ -226,7 +224,7 @@ export const postFirstExitMessage = withErrorHandling(async (interaction: String
                 `${MESSAGES_BUFFER[commandData.interaction]}\n` +
                 `**||${interaction.guild?.roles.everyone}||**`;
             if (investmentData.vip) {
-                const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.VIP.toString())
+                const exitChannel = await client.channels.fetch(config.VIP_SERVER.CHANNELS.FirstExit.toString())
                 if (exitChannel instanceof TextChannel) {
                     const msg = await exitChannel.send({ content: formattedText, files: [pageData.image] });
                     await notifyInvestmentTracker(msg, commandData.id)
@@ -263,7 +261,7 @@ export const postEarlyExitMessage = withErrorHandling(async (interaction: String
                 `**||${interaction.guild?.roles.everyone}||**`;
             
             if (investmentData.vip) {
-                const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.VIP.toString())
+                const exitChannel = await client.channels.fetch(config.VIP_SERVER.CHANNELS.FirstExit.toString())
                 if (exitChannel instanceof TextChannel) {
                     const msg = await exitChannel.send({ content: formattedText, files: [pageData.image] });
                     await notifyInvestmentTracker(msg, commandData.id)
@@ -414,6 +412,8 @@ export const countryNameToFlag = async (countryName: string) => {
             return '✨'
         } else if (countryName.toLowerCase() === 'england') {
             return ':england:'
+        } else if (countryName.toLowerCase() === 'korea republic') {
+            return ':flag_kr:'
         }
         const response = await axios.get(`https://restcountries.com/v3.1/name/${countryName}`);
         const countryData: {altSpellings: string}[] = response.data;

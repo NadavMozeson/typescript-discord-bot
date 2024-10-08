@@ -2,7 +2,6 @@ import { CategoryChannel, ChannelType, CommandInteraction, PermissionsBitField, 
 import { withErrorHandling } from "../utils/errorHandler.js";
 import { dbManager } from "../utils/databaseManager.js";
 import { client, config } from "../index.js"
-import { newVIPMember } from "../components/logsEmbed.js";
 
 export const handleOpenDMInteraction = withErrorHandling(async (interaction: CommandInteraction) => {
     const user = interaction.options.get('משתמש')?.user
@@ -26,7 +25,7 @@ export const handleOpenDMInteraction = withErrorHandling(async (interaction: Com
 
 export const createPrivateChat = withErrorHandling(async (user: User, isVIP: boolean) => {
     if (!(await dbManager.DM.checkIfChatExists(user.id))) {
-        const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId.toString());
+        const guild = await client.guilds.fetch(config.VIP_SERVER.INFO.ServerId);
 
         let categories = guild.channels.cache.filter(category => category.name.startsWith('🔒 | צאטים פרטיים | 🔒') && category.type === ChannelType.GuildCategory && category.children.cache.size  < 50);
         let category = null;
@@ -35,7 +34,6 @@ export const createPrivateChat = withErrorHandling(async (user: User, isVIP: boo
                 name: '🔒 | צאטים פרטיים | 🔒',
                 type: ChannelType.GuildCategory
             });
-            await category?.setPosition(0);
         } else {
             category = categories.first()
         }
@@ -72,7 +70,7 @@ export const createPrivateChat = withErrorHandling(async (user: User, isVIP: boo
 
 export const deletePrivateChat = withErrorHandling(async (user: User) => {
     if (await dbManager.DM.checkIfChatExists(user.id)) {
-        const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId.toString())
+        const guild = await client.guilds.fetch(config.VIP_SERVER.INFO.ServerId.toString())
         const channelId = await dbManager.DM.getChatChannel(user.id)
         if (channelId) {
             const allChannels = await guild.channels.fetch()

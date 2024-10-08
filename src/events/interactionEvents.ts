@@ -1,5 +1,5 @@
 import { withErrorHandling } from '../utils/errorHandler.js';
-import { client } from '../index.js';
+import { client, config } from '../index.js';
 import { ButtonInteraction, CommandInteraction, Interaction, StringSelectMenuInteraction } from 'discord.js';
 import { handleTicketButtons } from '../assets/ticketButtons.js';
 import { handleOpenDMInteraction } from '../assets/privateChats.js';
@@ -22,11 +22,11 @@ export async function setupInteractionEvents() {
 }
 
 const handleButtons = withErrorHandling(async (interaction: ButtonInteraction) => {
-    if (interaction.customId.toString().includes('ticket')) {
+    if (interaction.customId.toString().includes('ticket') && isPrimaryServer(interaction)) {
         await handleTicketButtons(interaction)
     } else if (interaction.customId.toString().includes('tracker_button_')) {
         await handelTrackerButtonClick(interaction)
-    } else if (interaction.customId.toString().includes('faq-click-')) {
+    } else if (interaction.customId.toString().includes('faq-click-') && isPrimaryServer(interaction)) {
         await handleNewFAQClick(interaction)
     } else if (interaction.customId.toString().includes('confirm_delete_inv_')) {
         await confirmDeleteInvestment(interaction)
@@ -34,7 +34,7 @@ const handleButtons = withErrorHandling(async (interaction: ButtonInteraction) =
 })
 
 const handleSlashCommands = withErrorHandling(async (interaction: CommandInteraction) => {
-    if (interaction.commandName === 'open-dm') {
+    if (interaction.commandName === 'open-dm' && isPrimaryServer(interaction)) {
         await handleOpenDMInteraction(interaction)
     } else if (interaction.commandName === 'investment') {
         await createNewInvestment(interaction)
@@ -44,9 +44,9 @@ const handleSlashCommands = withErrorHandling(async (interaction: CommandInterac
         await postNewFoderInvestment(interaction)
     } else if (interaction.commandName === 'totw') {
         await postNewTOTWInvestment(interaction)
-    } else if (interaction.commandName === 'team-suggest') {
+    } else if (interaction.commandName === 'team-suggest' && isPrimaryServer(interaction)) {
         await handleTeamSuggest(interaction)
-    } else if (interaction.commandName === 'faq-new') {
+    } else if (interaction.commandName === 'faq-new' && isPrimaryServer(interaction)) {
         await handleNewFAQ(interaction)
     } else if (interaction.commandName === 'vip') {
         await handleVIPRequestCommand(interaction)
@@ -69,3 +69,6 @@ const handleSelectMenuInteraction = withErrorHandling(async (interaction: String
     }
 })
 
+const isPrimaryServer = (interaction: (Interaction | ButtonInteraction | CommandInteraction | StringSelectMenuInteraction)) => {
+    return interaction.guildId?.toString() === config.SERVER.INFO.ServerId
+}

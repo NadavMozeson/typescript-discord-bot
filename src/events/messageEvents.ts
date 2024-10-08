@@ -9,8 +9,10 @@ export async function setupMessagesEvents() {
 	client.on(
 		'messageCreate',
 		withErrorHandling(async (message: Message) => {
-            await handleSuggestion(message)
-            await handleVotingMessage(message)
+            if (message.guildId === config.SERVER.INFO.ServerId) {
+                await handleSuggestion(message)
+                await handleVotingMessage(message)
+            }
 		}),
 	);
 
@@ -18,7 +20,7 @@ export async function setupMessagesEvents() {
 		'messageDelete',
 		withErrorHandling(async (message: Message | PartialMessage) => {
             if (message.author){
-                if ((message.channelId.toString() !== config.SERVER.CHANNELS.Suggest.toString()) && !message.author.bot) {
+                if ((message.channelId.toString() !== config.SERVER.CHANNELS.Suggest.toString()) && !message.author.bot && message.guildId === config.SERVER.INFO.ServerId) {
                     await messageDeleteEmbed(message)
                 }
             }
@@ -29,7 +31,7 @@ export async function setupMessagesEvents() {
 		'messageUpdate',
 		withErrorHandling(async (oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage) => {
             if (oldMessage.author){
-                if (!oldMessage.author.bot) {
+                if (!oldMessage.author.bot && oldMessage.guildId === config.SERVER.INFO.ServerId) {
                     await messageEditEmbed(oldMessage, newMessage)
                 }
             }
