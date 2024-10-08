@@ -156,12 +156,14 @@ export const newUserJoinVIPServer = withErrorHandling(async (member: GuildMember
     if (welcomeChannel instanceof TextChannel) {
         const embed = new EmbedBuilder()
             .setColor(isVIP ? Colors.Green : Colors.Red)
-            .setThumbnail(avatar ? avatar : vipGuild.iconURL())
             .addFields(
                 { name: 'משתמש', value: `${member}` },
                 { name: 'רכש פרימיום', value: isVIP ? "✅" : "❌" }
             )
             .setAuthor({ name: `${vipGuild.name}`, iconURL: `${vipGuild.iconURL()}` });
+        if (avatar !== null) {
+            embed.setThumbnail(avatar);
+        }
         await welcomeChannel.send({ embeds: [embed] });
     }
 })
