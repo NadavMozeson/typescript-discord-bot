@@ -1,8 +1,8 @@
-import { CategoryChannel, ChannelType, CommandInteraction, PermissionsBitField, User } from "discord.js";
-import { withErrorHandling } from "../utils/errorHandler";
-import { dbManager } from "../utils/databaseManager";
-import { client, config } from "../index"
-import { newVIPMember } from "../components/logsEmbed";
+import { CategoryChannel, ChannelType, CommandInteraction, PermissionsBitField, TextChannel, User } from "discord.js";
+import { withErrorHandling } from "../utils/errorHandler.js";
+import { dbManager } from "../utils/databaseManager.js";
+import { client, config } from "../index.js"
+import { newVIPMember } from "../components/logsEmbed.js";
 
 export const handleOpenDMInteraction = withErrorHandling(async (interaction: CommandInteraction) => {
     const user = interaction.options.get('משתמש')?.user
@@ -26,43 +26,57 @@ export const handleOpenDMInteraction = withErrorHandling(async (interaction: Com
 
 export const createPrivateChat = withErrorHandling(async (user: User, isVIP: boolean) => {
     if (!(await dbManager.DM.checkIfChatExists(user.id))) {
-        const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId.toString())
-        if (!guild.channels.cache.find(category => category.name === '🔒 | צאטים פרטיים | 🔒')){
-            const temp_cat = await guild.channels.create({
+        const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId.toString());
+
+        let category = guild.channels.cache.find(category => category.name.startsWith('🔒 | צאטים פרטיים | 🔒') && category.type === ChannelType.GuildCategory);
+
+        if (!category) {
+            category = await guild.channels.create({
                 name: '🔒 | צאטים פרטיים | 🔒',
                 type: ChannelType.GuildCategory
-            })
-            await temp_cat?.setPosition(0)
-        }
-        const category = guild.channels.cache.find(category => category.name === '🔒 | צאטים פרטיים | 🔒')
-        if (category){
-            const dmChannel = await guild.channels.create({
-                name: `${user.username} צאט פרטי`,
-                type: ChannelType.GuildText,
-                parent: category.id,
-                permissionOverwrites: [
-                    {
-                        id: guild.roles.everyone.id,
-                        deny: [PermissionsBitField.Flags.ViewChannel],
-                    },
-                    {
-                        id: user.id,
-                        allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
-                    }
-                ],
             });
-            if (dmChannel){
-                const message = `שלום ${user},\n` +
-                                "תודה רבה על תמיכתך בערוץ וברוך הבא לקבוצת חברי המועדון שלנו!\n" +
-                                "בצאט זה אתה יכול לשלוח לנו הודעות בצורה פרטנית ולקבל מענה באופן אישי על כל שאלה או מחשבה.\n" +
-                                "בנוסף, זמינים לך החדרים במתחם החברי מועדון שלנו. מוזמן לטייל שם ולראות תוכן אשר זמין רק לכם!\n" +
-                                "שוב, ברוך הבא ותודה על תמיכתך❤️"
-                await dmChannel.send(message)
-                await dbManager.DM.createNewChat(user.id, dmChannel.id, isVIP)
-            }
+            await category?.setPosition(0);
+        }
+
+        if (category instanceof CategoryChannel && category.children.cache.size >= 50) {
+            const existingCategories = guild.channels.cache.filter(cat => 
+                cat.name.startsWith('🔒 | צאטים פרטיים | 🔒') && cat.type === ChannelType.GuildCategory
+            ).size;
+            category = await guild.channels.create({
+                name: `🔒 | צאטים פרטיים | 🔒 (${existingCategories + 1})`,
+                type: ChannelType.GuildCategory
+            });
+            await category?.setPosition(0);
+        }
+
+        const dmChannel = await guild.channels.create({
+            name: `${user.username} צאט פרטי`,
+            type: ChannelType.GuildText,
+            parent: category.id,
+            permissionOverwrites: [
+                {
+                    id: guild.roles.everyone.id,
+                    deny: [PermissionsBitField.Flags.ViewChannel],
+                },
+                {
+                    id: user.id,
+                    allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
+                }
+            ],
+        });
+
+        if (dmChannel) {
+            const message = `שלום ${user},\n` +
+                            "תודה רבה על תמיכתך בערוץ וברוך הבא לקבוצת חברי המועדון שלנו!\n" +
+                            "בצאט זה אתה יכול לשלוח לנו הודעות בצורה פרטנית ולקבל מענה באופן אישי על כל שאלה או מחשבה.\n" +
+                            "בנוסף, זמינים לך החדרים במתחם החברי מועדון שלנו. מוזמן לטייל שם ולראות תוכן אשר זמין רק לכם!\n" +
+                            "שוב, ברוך הבא ותודה על תמיכתך❤️";
+            await dmChannel.send(message);
+            await dbManager.DM.createNewChat(user.id, dmChannel.id, isVIP);
         }
     }
-})
+});
+
 
 export const deletePrivateChat = withErrorHandling(async (user: User) => {
     if (await dbManager.DM.checkIfChatExists(user.id)) {
@@ -72,10 +86,10 @@ export const deletePrivateChat = withErrorHandling(async (user: User) => {
             const allChannels = await guild.channels.fetch()
             if (allChannels.has(channelId.toString())) {
                 const channel = allChannels.get(channelId.toString())
-                if (channel){
+                if (channel instanceof TextChannel){
+                    const category = channel.parent
                     await channel.delete()
                     await dbManager.DM.deleteChat(channelId)
-                    const category = guild.channels.cache.find(category => category.name === '🔒 | צאטים פרטיים | 🔒')
                     if (category instanceof CategoryChannel) {
                         if (category.children.cache.size === 0) {
                             await category.delete()

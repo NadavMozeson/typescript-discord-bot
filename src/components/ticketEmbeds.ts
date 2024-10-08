@@ -1,7 +1,7 @@
 import { EmbedBuilder, Interaction, ButtonBuilder, ActionRowBuilder, ButtonStyle, TextChannel, NewsChannel, ButtonInteraction } from 'discord.js';
-import { sendAdvancedEmbed, sendPlainEmbed } from './embedsBuilder';
-import { config, client } from '../index'
-import { withErrorHandling } from '../utils/errorHandler';
+import { sendAdvancedEmbed, sendPlainEmbed } from './embedsBuilder.js';
+import { config, client } from '../index.js'
+import { withErrorHandling } from '../utils/errorHandler.js';
 
 export const openTicketEmbed = withErrorHandling(async () => {
     const channel = await client.channels.fetch(config.SERVER.CHANNELS.Ticket.toString())

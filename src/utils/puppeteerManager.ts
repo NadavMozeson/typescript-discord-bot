@@ -1,6 +1,6 @@
 import puppeteer, { ElementHandle, Page } from 'puppeteer';
-import { client, config } from '../index'
-import { withErrorHandling } from './errorHandler';
+import { client, config } from '../index.js'
+import { withErrorHandling } from './errorHandler.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 

@@ -1,5 +1,5 @@
-import { withErrorHandling } from "../utils/errorHandler"
-import { client, config } from "../index"
+import { withErrorHandling } from "../utils/errorHandler.js"
+import { client, config } from "../index.js"
 import { AttachmentBuilder, CommandInteraction, GuildMember, Message, PermissionsBitField, TextChannel } from "discord.js"
 
 export const handleTeamSuggest = withErrorHandling(async (interaction: CommandInteraction) => {

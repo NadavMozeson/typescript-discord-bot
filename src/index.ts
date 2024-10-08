@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { Client } from 'discord.js'
-import { getConfigFromDatabase, initializeDatabase } from './utils/databaseManager';
-import { setupEvents } from './events/loadEvents';
+import { getConfigFromDatabase, initializeDatabase } from './utils/databaseManager.js';
+import { setupEvents } from './events/loadEvents.js';
 
 export const client = new Client({
     intents: ['Guilds', 'GuildMembers', 'GuildMessages', 'MessageContent']

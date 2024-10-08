@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "discord.js"
-import { client } from "../index"
+import { client } from "../index.js"
 
 export async function setupSlashCommands() {
     if (client.application){

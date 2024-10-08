@@ -1,7 +1,7 @@
-import { withErrorHandling } from "../utils/errorHandler"
-import { client, config } from "../index"
-import { dbManager } from "../utils/databaseManager"
-import { countryNameToFlag } from "./newInvestments"
+import { withErrorHandling } from "../utils/errorHandler.js"
+import { client, config } from "../index.js"
+import { dbManager } from "../utils/databaseManager.js"
+import { countryNameToFlag } from "./newInvestments.js"
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Message, TextChannel } from "discord.js"
 
 export const updateTrackerMessage = withErrorHandling(async () => {

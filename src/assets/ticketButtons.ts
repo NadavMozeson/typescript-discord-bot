@@ -1,7 +1,7 @@
 import { ButtonInteraction } from "discord.js"
-import { withErrorHandling } from "../utils/errorHandler"
-import { createNewTicket, confirmTicketClose } from "./ticketSystem"
-import { confirmTicketCloseMessage } from "../components/ticketEmbeds"
+import { withErrorHandling } from "../utils/errorHandler.js"
+import { createNewTicket, confirmTicketClose } from "./ticketSystem.js"
+import { confirmTicketCloseMessage } from "../components/ticketEmbeds.js"
 
 export const handleTicketButtons = withErrorHandling(async (interaction: ButtonInteraction) => {
     if (interaction.customId.includes('ticket-create-button-')) {

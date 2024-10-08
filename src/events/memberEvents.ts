@@ -1,9 +1,8 @@
 import { Guild, GuildMember, PartialGuildMember, Role } from 'discord.js';
-import { memberBanEmbed, memberUnbanEmbed, memberTimeoutEmbed, newVIPMember } from '../components/logsEmbed';
-import { withErrorHandling } from '../utils/errorHandler';
-import { config } from '../index';
-import { client } from '../index';
-import { createPrivateChat, deletePrivateChat } from '../assets/privateChats';
+import { memberBanEmbed, memberUnbanEmbed, memberTimeoutEmbed, newVIPMember } from '../components/logsEmbed.js';
+import { withErrorHandling } from '../utils/errorHandler.js';
+import { config, client } from '../index.js';
+import { createPrivateChat, deletePrivateChat } from '../assets/privateChats.js';
 
 type GuildBanEvent = {
   user: { bot: boolean; id: string; };

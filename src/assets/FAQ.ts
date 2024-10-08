@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder, Message, TextChannel } from 'discord.js';
-import { config, client } from '../index';
-import { withErrorHandling } from '../utils/errorHandler';
-import { dbManager } from '../utils/databaseManager';
+import { config, client } from '../index.js';
+import { withErrorHandling } from '../utils/errorHandler.js';
+import { dbManager } from '../utils/databaseManager.js';
 
 export const handleNewFAQ = withErrorHandling(async (interaction: CommandInteraction) => {
     await interaction.reply({ ephemeral: true, content: 'מוסיף הודעה למאגר...' })

@@ -1,5 +1,5 @@
-import { withErrorHandling } from "../utils/errorHandler";
-import { client, config } from "../index"
+import { withErrorHandling } from "../utils/errorHandler.js";
+import { client, config } from "../index.js"
 import axios from 'axios';
 import { Guild, VoiceChannel } from "discord.js";
 

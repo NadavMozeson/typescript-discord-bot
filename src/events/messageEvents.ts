@@ -1,9 +1,9 @@
 import { Message, PartialMessage } from 'discord.js';
-import { withErrorHandling } from '../utils/errorHandler';
-import { client, config } from '../index';
-import { messageDeleteEmbed, messageEditEmbed } from '../components/logsEmbed';
-import { handleSuggestion } from '../assets/suggestionSystem';
-import { handleVotingMessage } from '../assets/votingReaction';
+import { withErrorHandling } from '../utils/errorHandler.js';
+import { client, config } from '../index.js';
+import { messageDeleteEmbed, messageEditEmbed } from '../components/logsEmbed.js';
+import { handleSuggestion } from '../assets/suggestionSystem.js';
+import { handleVotingMessage } from '../assets/votingReaction.js';
 
 export async function setupMessagesEvents() {
 	client.on(

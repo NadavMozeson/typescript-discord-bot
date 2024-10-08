@@ -1,9 +1,9 @@
-import { withErrorHandling } from '../utils/errorHandler';
-import { client } from '../index';
-import { setupAssets } from '../assets/loadAssets';
-import { setupSlashCommands } from './slashCommands';
-import { updateStats } from '../assets/statsHandler';
-import { handleFAQMessage } from '../assets/FAQ';
+import { withErrorHandling } from '../utils/errorHandler.js';
+import { client } from '../index.js';
+import { setupAssets } from '../assets/loadAssets.js';
+import { setupSlashCommands } from './slashCommands.js';
+import { updateStats } from '../assets/statsHandler.js';
+import { handleFAQMessage } from '../assets/FAQ.js';
 
 export async function setupBasicEvents() {
 	client.on(

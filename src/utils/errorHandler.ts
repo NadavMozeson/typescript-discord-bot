@@ -1,4 +1,4 @@
-import { client } from '../index';
+import { client } from '../index.js';
 
 export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(fn: T): T {
     return async function (...args: Parameters<T>): Promise<ReturnType<T> | undefined> {

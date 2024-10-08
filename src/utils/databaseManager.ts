@@ -1,7 +1,7 @@
 import { MongoClient, Collection, Db, WithId, Document, ObjectId, Long } from 'mongodb';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { disableInvestmentButtons } from '../assets/investmentTracker';
+import { disableInvestmentButtons } from '../assets/investmentTracker.js';
 
 // MongoDB connection URL and database name
 const CONNECTION_URL = process.env.MONGO_CONNECTION_STRING as string;

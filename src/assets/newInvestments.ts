@@ -1,12 +1,12 @@
 import { ActionRowBuilder, APIAttachment, Attachment, AttachmentBuilder, AttachmentPayload, BufferResolvable, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder, JSONEncodable, Message, PermissionFlagsBits, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextChannel } from "discord.js"
-import { withErrorHandling } from "../utils/errorHandler"
-import { getFutbinFoderPageData, getFutbinPlayerPageData, getFutbinTOTWPageData, getPageContent } from "../utils/puppeteerManager"
+import { withErrorHandling } from "../utils/errorHandler.js"
+import { getFutbinFoderPageData, getFutbinPlayerPageData, getFutbinTOTWPageData, getPageContent } from "../utils/puppeteerManager.js"
 import * as cheerio from 'cheerio'
 import axios from "axios"
-import { dbManager } from "../utils/databaseManager"
-import { client, config } from "../index"
+import { dbManager } from "../utils/databaseManager.js"
+import { client, config } from "../index.js"
 import { Stream } from "stream"
-import { generateTrackerButtons, notifyInvestmentTracker } from "./investmentTracker"
+import { generateTrackerButtons, notifyInvestmentTracker } from "./investmentTracker.js"
 
 const RETRIES = 5
 let MESSAGES_BUFFER: { [key: string]: string } = {}

@@ -1,12 +1,12 @@
-import { withErrorHandling } from '../utils/errorHandler';
-import { client } from '../index';
+import { withErrorHandling } from '../utils/errorHandler.js';
+import { client } from '../index.js';
 import { ButtonInteraction, CommandInteraction, Interaction, StringSelectMenuInteraction } from 'discord.js';
-import { handleTicketButtons } from '../assets/ticketButtons';
-import { handleOpenDMInteraction } from '../assets/privateChats';
-import { confirmDeleteInvestment, createNewInvestment, deleteInvestment, postEarlyExitMessage, postFirstExitMessage, postNewFoderInvestment, postNewInvestment, postNewTOTWInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments';
-import { handelTrackerButtonClick } from '../assets/investmentTracker';
-import { handleTeamSuggest } from '../assets/teamUpgrades';
-import { handleNewFAQ, handleNewFAQClick } from '../assets/FAQ';
+import { handleTicketButtons } from '../assets/ticketButtons.js';
+import { handleOpenDMInteraction } from '../assets/privateChats.js';
+import { confirmDeleteInvestment, createNewInvestment, deleteInvestment, postEarlyExitMessage, postFirstExitMessage, postNewFoderInvestment, postNewInvestment, postNewTOTWInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments.js';
+import { handelTrackerButtonClick } from '../assets/investmentTracker.js';
+import { handleTeamSuggest } from '../assets/teamUpgrades.js';
+import { handleNewFAQ, handleNewFAQClick } from '../assets/FAQ.js';
 
 export async function setupInteractionEvents() {
 	client.on('interactionCreate', withErrorHandling(async (interaction: Interaction) => {

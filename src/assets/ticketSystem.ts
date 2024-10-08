@@ -1,8 +1,8 @@
 import { ButtonInteraction, CategoryChannel, ChannelType, PermissionsBitField, TextChannel } from 'discord.js';
-import { config, client } from '../index';
-import { withErrorHandling } from '../utils/errorHandler';
-import { dbManager } from '../utils/databaseManager';
-import { openTicketEmbed, closeTicketLogEmbed, newTicketEmbed } from '../components/ticketEmbeds';
+import { config, client } from '../index.js';
+import { withErrorHandling } from '../utils/errorHandler.js';
+import { dbManager } from '../utils/databaseManager.js';
+import { openTicketEmbed, closeTicketLogEmbed, newTicketEmbed } from '../components/ticketEmbeds.js';
 
 export const setupTicketSystem = withErrorHandling(async () => {
     await openTicketEmbed()

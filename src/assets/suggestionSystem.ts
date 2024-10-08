@@ -1,6 +1,6 @@
 import { Message } from "discord.js";
-import { withErrorHandling } from "../utils/errorHandler";
-import { config } from "../index"
+import { withErrorHandling } from "../utils/errorHandler.js";
+import { config } from "../index.js"
 
 export const handleSuggestion = withErrorHandling(async (message: Message) => {
     if (message.channelId === config.SERVER.CHANNELS.Suggest.toString()) {
