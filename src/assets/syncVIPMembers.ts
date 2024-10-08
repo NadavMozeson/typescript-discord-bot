@@ -155,7 +155,7 @@ export const newUserJoinVIPServer = withErrorHandling(async (member: GuildMember
     if (welcomeChannel instanceof TextChannel) {
         const embed = new EmbedBuilder()
             .setColor(isVIP ? Colors.Green : Colors.Red)
-            .setImage(member.avatarURL() || vipGuild.iconURL())
+            .setThumbnail(member.avatarURL() || vipGuild.iconURL())
             .addFields(
                 { name: 'משתמש', value: `${member}` },
                 { name: 'רכש פרימיום', value: isVIP ? "✅" : "❌" }
