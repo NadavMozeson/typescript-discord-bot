@@ -13,6 +13,8 @@ export async function setupSlashCommands() {
         await client.application.commands.create(TeamSuggest)
         await client.application.commands.create(FAQ)
         await client.application.commands.create(DeleteInvestment)
+        await client.application.commands.create(VIP)
+        await client.application.commands.create(SyncVIP)
     }
 }
 
@@ -197,3 +199,11 @@ const FAQ = new SlashCommandBuilder()
 const DeleteInvestment = new SlashCommandBuilder()
     .setName('delete_investment')
     .setDescription('מחיקת השקעה מהמסד נתונים')
+
+const VIP = new SlashCommandBuilder()
+    .setName('vip')
+    .setDescription('פקודה לקבלת רול פרימיום')
+
+const SyncVIP = new SlashCommandBuilder()
+    .setName('sync_vip')
+    .setDescription('ביצוע סנכרון לכלל חברי הפרימיום')

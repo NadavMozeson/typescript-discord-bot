@@ -7,6 +7,7 @@ import { confirmDeleteInvestment, createNewInvestment, deleteInvestment, postEar
 import { handelTrackerButtonClick } from '../assets/investmentTracker.js';
 import { handleTeamSuggest } from '../assets/teamUpgrades.js';
 import { handleNewFAQ, handleNewFAQClick } from '../assets/FAQ.js';
+import { handleVIPRequestCommand, syncAllVIPs } from '../assets/syncVIPMembers.js';
 
 export async function setupInteractionEvents() {
 	client.on('interactionCreate', withErrorHandling(async (interaction: Interaction) => {
@@ -47,6 +48,10 @@ const handleSlashCommands = withErrorHandling(async (interaction: CommandInterac
         await handleTeamSuggest(interaction)
     } else if (interaction.commandName === 'faq-new') {
         await handleNewFAQ(interaction)
+    } else if (interaction.commandName === 'vip') {
+        await handleVIPRequestCommand(interaction)
+    } else if (interaction.commandName === 'sync_vip') {
+        await syncAllVIPs(interaction)
     }
 })
 
