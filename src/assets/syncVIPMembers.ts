@@ -1,4 +1,4 @@
-import { CommandInteraction, DiscordAPIError, User } from "discord.js";
+import { Colors, CommandInteraction, DiscordAPIError, EmbedBuilder, GuildMember, TextChannel } from "discord.js";
 import { client, config } from "../index.js";
 import { withErrorHandling } from "../utils/errorHandler.js";
 import { wordpressDBManager } from "../utils/websiteDatabaseManage.js";
@@ -131,5 +131,36 @@ export const updateUserForVIP = withErrorHandling(async (userID) => {
                 }
             }
         }
+    }
+})
+
+export const newUserJoinVIPServer = withErrorHandling(async (member: GuildMember) => {
+    const isVIP = await wordpressDBManager.isUserVIP(member.user.id)
+    const vipGuild = await client.guilds.fetch(config.VIP_SERVER.INFO.ServerId)
+    if (isVIP) {
+        const vipPremiumRole = await vipGuild.roles.fetch(config.VIP_SERVER.ROLES.VIP)
+        if (vipPremiumRole) {
+            try {
+                if (member && !member.roles.cache.has(vipPremiumRole.id)) {
+                    await member.roles.add(vipPremiumRole);
+                }
+            } catch (error) {
+                if (!(error instanceof DiscordAPIError && error.code === 10007)) {
+                    throw error
+                }
+            }
+        }
+    }
+    const welcomeChannel = await client.channels.fetch(config.VIP_SERVER.CHANNELS.Welcome)
+    if (welcomeChannel instanceof TextChannel) {
+        const embed = new EmbedBuilder()
+            .setColor(isVIP ? Colors.Green : Colors.Red)
+            .setImage(member.avatarURL() || vipGuild.iconURL())
+            .addFields(
+                { name: 'משתמש', value: `${member}` },
+                { name: 'רכש פרימיום', value: isVIP ? "✅" : "❌" }
+            )
+            .setAuthor({ name: `${vipGuild.name}`, iconURL: `${vipGuild.iconURL()}` });
+        await welcomeChannel.send({ embeds: [embed] });
     }
 })

@@ -95,12 +95,6 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
             `**||${everyoneRole}||**`;
         const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
         let isVIP = interaction.guildId === config.VIP_SERVER.INFO.ServerId
-        if (interaction.guildId === config.SERVER.INFO.ServerId && interaction.channel instanceof TextChannel && everyoneRole) {
-            const channelPerms = interaction.channel.permissionOverwrites.cache.get(everyoneRole.id);
-            if (channelPerms && channelPerms.deny.has(PermissionFlagsBits.ViewChannel)) {
-                isVIP = true
-            }
-        }
         if (msg) {
             const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com' + paramsData.url, pageData.country, pageData.rating, pageData.card, paramsData.risk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
             await msg.edit({ components: [await generateTrackerButtons(insertedData.insertedId.toString())] })

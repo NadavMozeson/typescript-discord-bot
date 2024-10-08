@@ -3,7 +3,7 @@ import { memberBanEmbed, memberUnbanEmbed, memberTimeoutEmbed, newVIPMember } fr
 import { withErrorHandling } from '../utils/errorHandler.js';
 import { config, client } from '../index.js';
 import { createPrivateChat, deletePrivateChat } from '../assets/privateChats.js';
-import { updateUserForVIP } from '../assets/syncVIPMembers.js';
+import { newUserJoinVIPServer, updateUserForVIP } from '../assets/syncVIPMembers.js';
 
 type GuildBanEvent = {
   user: { bot: boolean; id: string; };
@@ -24,7 +24,7 @@ export async function setupMemberEvents() {
           throw new Error('Failed to add member role to user ' + member.displayName);
         }
       } else {
-        await updateUserForVIP(member.id)
+        await newUserJoinVIPServer(member)
       }
     }),
   );

@@ -156,6 +156,7 @@ interface Config {
       CHANNELS: {
         FirstExit: string;
         Profit: string;
+        Welcome: string;
       };
     }
 }
