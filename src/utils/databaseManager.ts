@@ -157,6 +157,7 @@ interface Config {
         FirstExit: string;
         Profit: string;
         Welcome: string;
+        VIPStats: string;
       };
     }
 }

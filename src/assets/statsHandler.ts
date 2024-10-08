@@ -6,9 +6,11 @@ import { Guild, VoiceChannel } from "discord.js";
 export const updateStats = withErrorHandling(async () => {
     await updateDiscordStats()
     await updateYouTubeStats()
+    await updateVIPAmountCounter()
     setInterval(async () => {
         await updateYouTubeStats()
         await updateDiscordStats()
+        await updateVIPAmountCounter()
     }, 3 * 60 * 60 * 1000); 
 })
 
@@ -45,5 +47,14 @@ const updateDiscordStats = withErrorHandling(async () => {
     }
 })
 
-
-
+const updateVIPAmountCounter = withErrorHandling(async () => {
+    const guild = await client.guilds.fetch(config.VIP_SERVER.INFO.ServerId)
+    const role = await guild.roles.fetch(config.VIP_SERVER.ROLES.VIP)
+    if (guild && role) {
+        await guild.members.fetch();
+        const channel = await client.channels.fetch(config.VIP_SERVER.CHANNELS.VIPStats)
+        if(channel && channel instanceof VoiceChannel){
+            await channel.setName(`חברי פרימיום: ${role.members.size}`)
+        }
+    }
+})
