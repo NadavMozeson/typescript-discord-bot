@@ -1,13 +1,13 @@
 import { withErrorHandling } from '../utils/errorHandler.js';
 import { client, config } from '../index.js';
-import { ButtonInteraction, CommandInteraction, Interaction, StringSelectMenuInteraction } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, GuildMember, Interaction, StringSelectMenuInteraction } from 'discord.js';
 import { handleTicketButtons } from '../assets/ticketButtons.js';
 import { handleOpenDMInteraction } from '../assets/privateChats.js';
 import { confirmDeleteInvestment, createNewInvestment, deleteInvestment, postEarlyExitMessage, postFirstExitMessage, postNewFoderInvestment, postNewInvestment, postNewTOTWInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments.js';
 import { handelTrackerButtonClick } from '../assets/investmentTracker.js';
 import { handleTeamSuggest } from '../assets/teamUpgrades.js';
 import { handleNewFAQ, handleNewFAQClick } from '../assets/FAQ.js';
-import { handleVIPRequestCommand, syncAllVIPs } from '../assets/syncVIPMembers.js';
+import { handleVIPRequestCommand, syncAllVIPs, updateUserForVIP } from '../assets/syncVIPMembers.js';
 
 export async function setupInteractionEvents() {
 	client.on('interactionCreate', withErrorHandling(async (interaction: Interaction) => {
@@ -52,6 +52,8 @@ const handleSlashCommands = withErrorHandling(async (interaction: CommandInterac
         await handleVIPRequestCommand(interaction)
     } else if (interaction.commandName === 'sync_vip') {
         await syncAllVIPs(interaction)
+    } else if (interaction.commandName === 'sync_user'){
+        await updateUserForVIP(interaction.options.get('משתמש')?.user?.id)
     }
 })
 

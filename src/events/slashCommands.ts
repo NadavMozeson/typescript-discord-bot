@@ -15,6 +15,7 @@ export async function setupSlashCommands() {
         await client.application.commands.create(DeleteInvestment)
         await client.application.commands.create(VIP)
         await client.application.commands.create(SyncVIP)
+        await client.application.commands.create(SyncVIPForUser)
     }
 }
 
@@ -207,3 +208,12 @@ const VIP = new SlashCommandBuilder()
 const SyncVIP = new SlashCommandBuilder()
     .setName('sync_vip')
     .setDescription('ביצוע סנכרון לכלל חברי הפרימיום')
+
+const SyncVIPForUser = new SlashCommandBuilder()
+    .setName('sync_user')
+    .setDescription('ביצוע סנכרון לכלל חברי הפרימיום')
+    .addUserOption(option =>
+        option.setName('משתמש')
+              .setDescription('שעליו לבצע את הסנכרון')
+              .setRequired(true)
+    )
