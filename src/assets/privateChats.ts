@@ -28,7 +28,7 @@ export const createPrivateChat = withErrorHandling(async (user: User, isVIP: boo
     if (!(await dbManager.DM.checkIfChatExists(user.id))) {
         const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId.toString());
 
-        let categories = guild.channels.cache.filter(category => category.name.startsWith('🔒 | צאטים פרטיים | 🔒') && category.type === ChannelType.GuildCategory && category.children.cache.size  < 1);
+        let categories = guild.channels.cache.filter(category => category.name.startsWith('🔒 | צאטים פרטיים | 🔒') && category.type === ChannelType.GuildCategory && category.children.cache.size  < 50);
         let category = null;
         if (categories.size === 0) {
             category = await guild.channels.create({
