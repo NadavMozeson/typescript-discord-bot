@@ -5,14 +5,16 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(fn
         try {
             return await fn(...args);
         } catch (error) {
-            try {
-                if (client.user) {
-                    const user = await client.users.fetch(process.env.DEVELOPER_DISCORD_ID as string);
-                    console.log(`${error}`);
-                    await user.send(`${(error as Error).message}\nStack Trace:\n${(error as Error).stack}`);
+            if (!(error instanceof Error && error.message.includes('Navigation timeout of 60000 ms exceeded'))) {
+                try {
+                    if (client.user) {
+                        const user = await client.users.fetch(process.env.DEVELOPER_DISCORD_ID as string);
+                        console.log(`${error}`);
+                        await user.send(`${(error as Error).message}\nStack Trace:\n${(error as Error).stack}`);
+                    }
+                } catch (errorSend) {
+                    console.error(`Failed to send exception to user: ${errorSend}`);
                 }
-            } catch (errorSend) {
-                console.error(`Failed to send exception to user: ${errorSend}`);
             }
             return undefined; 
         }

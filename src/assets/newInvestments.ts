@@ -259,19 +259,15 @@ export const postEarlyExitMessage = withErrorHandling(async (interaction: String
                 `### ${flagEmoji} ${investmentData.name.toUpperCase()} ${investmentData.rating} ${flagEmoji}\n` +
                 `${MESSAGES_BUFFER[commandData.interaction]}\n` +
                 `**||${interaction.guild?.roles.everyone}||**`;
-            
+            let exitChannel
             if (investmentData.vip) {
-                const exitChannel = await client.channels.fetch(config.VIP_SERVER.CHANNELS.FirstExit.toString())
-                if (exitChannel instanceof TextChannel) {
-                    const msg = await exitChannel.send({ content: formattedText, files: [pageData.image] });
-                    await notifyInvestmentTracker(msg, commandData.id)
-                }
+                exitChannel = await client.channels.fetch(config.VIP_SERVER.CHANNELS.FirstExit.toString())
             } else {
-                const exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.everyone.toString())
-                if (exitChannel instanceof TextChannel) {
-                    const msg = await exitChannel.send({ content: formattedText, files: [pageData.image] });
-                    await notifyInvestmentTracker(msg, commandData.id)
-                }
+                exitChannel = await client.channels.fetch(config.SERVER.CHANNELS.FirstExit.everyone.toString())
+            }
+            if (exitChannel instanceof TextChannel) {
+                const msg = await exitChannel.send({ content: formattedText, files: [pageData.image] });
+                await notifyInvestmentTracker(msg, commandData.id)
             }
             await dbManager.Investments.deleteInvestmentByID(commandData.id)
         }
@@ -313,13 +309,7 @@ export const postNewFoderInvestment = withErrorHandling(async (interaction: Comm
                 `**||${everyoneRole}||**`;
     
             const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
-            let isVIP = false
-            if (interaction.channel instanceof TextChannel && everyoneRole) {
-                const channelPerms = interaction.channel.permissionOverwrites.cache.get(everyoneRole.id);
-                if (channelPerms && channelPerms.deny.has(PermissionFlagsBits.ViewChannel)) {
-                    isVIP = true
-                }
-            }
+            let isVIP = interaction.guildId === config.VIP_SERVER.INFO.ServerId
             if (msg) {
                 const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com/stc/cheapest', pageData.country, '', 'פודר', investmentRisk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
                 await msg.edit({ components: [await generateTrackerButtons(insertedData.insertedId.toString())] })
@@ -365,13 +355,7 @@ export const postNewTOTWInvestment = withErrorHandling(async (interaction: Comma
                 `**||${everyoneRole}||**`;
             
             const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
-            let isVIP = false
-            if (interaction.channel instanceof TextChannel && everyoneRole) {
-                const channelPerms = interaction.channel.permissionOverwrites.cache.get(everyoneRole.id);
-                if (channelPerms && channelPerms.deny.has(PermissionFlagsBits.ViewChannel)) {
-                    isVIP = true
-                }
-            }
+            let isVIP = interaction.guildId === config.VIP_SERVER.INFO.ServerId
             if (msg) {
                 const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com/stc/cheapest', pageData.country, '', 'פודר', investmentRisk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
                 await msg.edit({ components: [await generateTrackerButtons(insertedData.insertedId.toString())] })
