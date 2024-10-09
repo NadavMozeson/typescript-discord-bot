@@ -15,6 +15,8 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(fn
                 } catch (errorSend) {
                     console.error(`Failed to send exception to user: ${errorSend}`);
                 }
+            } else {
+                console.log(`${error}`);
             }
             return undefined; 
         }
