@@ -35,7 +35,11 @@ export const createNewInvestment = withErrorHandling(async (interaction: Command
                 url: playerRow.find('.table-player-name').attr('href')
             };
             if (player.url) {
-                results.push({ label: `${player.name}(${player.rating}) - ${player.card} - ${player.price}`, value: player.url })
+                let label = `${player.name}(${player.rating}) ${player.price} | ${player.card}`;
+                if (label.length > 100) {
+                    label = label.slice(0, 100 - 3) + '...';
+                }
+                results.push({ label: label, value: player.url })
             }
         })
         if (results.length > 0) {
