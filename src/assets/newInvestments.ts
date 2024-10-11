@@ -7,6 +7,7 @@ import { dbManager } from "../utils/databaseManager.js"
 import { client, config } from "../index.js"
 import { Stream } from "stream"
 import { generateTrackerButtons, notifyInvestmentTracker } from "./investmentTracker.js"
+import sharp from 'sharp';
 
 const RETRIES = 5
 let MESSAGES_BUFFER: { [key: string]: string } = {}
@@ -77,6 +78,9 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
             break
         }
         pageData = await getFutbinPlayerPageData('https://www.futbin.com' + paramsData.url)
+    }
+    if (pageData?.image) {
+        pageData.image = await addWatermarkToImage(pageData.image, interaction.guild?.iconURL(), interaction.guild?.name)
     }
     if (pageData?.country && pageData.minPCPrice && pageData.minConsolePrice && pageData.pricePC && pageData.priceConsole && pageData.name && pageData.rating && pageData.card) {
         const flagEmoji = await countryNameToFlag(pageData.country)
@@ -157,6 +161,15 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
                 break
             }
             pageData = await checkWhatFunctionToRun(investmentData)
+        }
+        if (investmentData.version !== 'פודר' && pageData?.image) {
+            let guild = null
+            if (investmentData.vip) {
+                guild = await client.guilds.fetch(config.VIP_SERVER.INFO.ServerId)
+            } else {
+                guild = await client.guilds.fetch(config.SERVER.INFO.ServerId)
+            }
+            pageData.image = await addWatermarkToImage(pageData.image, guild.iconURL(), guild.name)
         }
         if (pageData?.pricePC && pageData.priceConsole && pageData.image) {
             const flagEmoji = await countryNameToFlag(investmentData.nation)
@@ -429,4 +442,33 @@ const checkWhatFunctionToRun = withErrorHandling(async (data: any) => {
     } else {
         return await getFutbinPlayerPageData(data.link)
     }
+})
+
+const addWatermarkToImage = withErrorHandling(async (imageBuffer, watermarkImageURL, watermarkText) => {
+    const watermarkImageResponse = await axios.get(watermarkImageURL, { responseType: 'arraybuffer' });
+    const watermarkImageBuffer = Buffer.from(watermarkImageResponse.data);
+    
+    const textOverlay = Buffer.from(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="736" height="377">
+            <text x="50%" y="96%" font-size="35" fill="white" text-anchor="middle" font-family="Arial" font-weight="bold" dir="rtl">${watermarkText} @</text>
+        </svg>`
+    );
+
+    const editedImageBuffer = await sharp(imageBuffer)
+        .composite([
+            {
+                input: watermarkImageBuffer,
+                left: 415,
+                top: 145,
+                blend: 'over',
+            },
+            {
+                input: textOverlay,
+                blend: 'over',
+                gravity: 'south',
+            }
+        ])
+        .toBuffer();
+
+    return editedImageBuffer;
 })

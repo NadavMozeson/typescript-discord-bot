@@ -9,6 +9,7 @@
     "skipLibCheck": true,
     "strictNullChecks": true,
     "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "outDir": "dist",
     "rootDir": "src"
   },

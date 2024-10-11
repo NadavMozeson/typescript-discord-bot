@@ -8,17 +8,13 @@ const USER_AGENT_STRING = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit
 
 export const getFutbinPlayerPageData = withErrorHandling(async function (url : string) {
     const selector = 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div'
-    const selectorsToHide = ['body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > a', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > a', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-card-section > div.player-card-wrapper > div > div', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-card-section > div.player-stats-evolution-toggle.row']
+    const selectorsToHide = ['body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > a', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > a', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-card-section > div.player-card-wrapper > div > div', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-card-section > div.player-stats-evolution-toggle.row', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > div.price-wrapper > div.prices-updated.no-wrap.inline-with-icon.text-faded', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > div.price-wrapper > div.prices-updated.no-wrap.inline-with-icon.text-faded', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-pc.price-box-original-player > div.small-row.align-center.font-extra-small', 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-prices-section > div.price-box.player-price-not-ps.price-box-original-player > div.small-row.align-center.font-extra-small']
     const currentDir = dirname(fileURLToPath(import.meta.url));
     const browser = currentDir.includes('sw33t') ? (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })) : (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], executablePath: process.env.BROWSER_PATH }))
 
     const page: Page = await browser.newPage();
 
     await page.setUserAgent(USER_AGENT_STRING);
-    
-    const guild = await client.guilds.fetch(config.SERVER.INFO.ServerId.toString());
-    const watermarkUrl = guild.iconURL()?.toString();
-    const watermarkText = '@' + guild.name.toString();
 
     await page.setRequestInterception(true);
     
@@ -92,21 +88,6 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
     const element: ElementHandle | null = await page.$(selector);
 
     if (element) {
-        await page.evaluate((watermarkUrl: any) => {
-            if (watermarkUrl) {
-                const watermark = document.createElement('img');
-                watermark.src = watermarkUrl;
-                watermark.style.position = 'absolute';
-                watermark.style.bottom = '135px';
-                watermark.style.right = '250px';
-                watermark.style.opacity = '1';
-                watermark.style.zIndex = '9999';
-                watermark.style.width = '110px';
-                watermark.style.height = '110px';
-                document.body.appendChild(watermark);
-            }
-        }, watermarkUrl)
-
         await page.evaluate((selectors: string[]) => {
             selectors.forEach(selector => {
                 const elements = document.querySelectorAll(selector);
@@ -115,24 +96,6 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
                 });
             });
         }, selectorsToHide);
-
-        await page.evaluate((text: any) => {
-            const textElement = document.createElement('div');
-            textElement.textContent = text;
-            textElement.style.position = 'absolute';
-            textElement.style.bottom = '10px';
-            textElement.style.left = '50%';
-            textElement.style.transform = 'translateX(-50%)';
-            textElement.style.color = 'white';
-            textElement.style.fontFamily = 'Arial';
-            textElement.style.fontWeight = 'bold';
-            textElement.style.padding = '5px';
-            textElement.style.marginBottom = '5px';
-            textElement.style.fontSize = '35px';
-            textElement.style.zIndex = '9999';
-            textElement.style.whiteSpace = 'nowrap';
-            document.body.appendChild(textElement);
-        }, watermarkText);
 
         await page.evaluate((selector: string) => {
             const element = document.querySelector(selector);
@@ -252,7 +215,6 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
             return element ? element.getAttribute('href') : null;
         }, selector, i);
         if (href.includes('/player/')) {
-            console.log(href)
             const playerData = await getFutbinPlayerPageData(href);
             if (playerData && playerData.pricePC && playerData.priceConsole && playerData.minPCPrice && playerData.minConsolePrice) {
                 pricePC = playerData.pricePC   
@@ -319,7 +281,7 @@ export const getFutbinTOTWPageData = withErrorHandling(async function (foderRati
         height: 1758
     });
 
-    await page.goto(`https://www.futbin.com/players?ps_price=200%2B&version=all_ifs&player_rating=${foderRating}-${foderRating}&sort=ps_price&order=asc`, { waitUntil : "networkidle0", timeout: 60000 });
+    await page.goto(`https://www.futbin.com/players?ps_price=200%2B&version=if_gold&player_rating=${foderRating}-${foderRating}&sort=ps_price&order=asc`, { waitUntil : "networkidle0", timeout: 60000 });
 
     const playerName = `${foderRating} Rated TOTW Players`;
 

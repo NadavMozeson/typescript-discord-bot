@@ -154,20 +154,14 @@ export const disableInvestmentButtons = withErrorHandling(async (investmentID: s
             if (allMessages.has(investmentData.msg.toString())){
                 const message = allMessages.get(investmentData.msg.toString())
                 if (message) {
-                    const buttonAdd = new ButtonBuilder()
-                        .setCustomId(`disabled_add_tracker_button_${investmentID}`)
-                        .setLabel('ביצוע מעקב')
-                        .setStyle(ButtonStyle.Secondary)
-                        .setDisabled(true);
-        
-                    const buttonRemove = new ButtonBuilder()
-                        .setCustomId(`disabled_remove_tracker_button_${investmentID}`)
-                        .setLabel('הסרת מעקב')
-                        .setStyle(ButtonStyle.Secondary)
+                    const button = new ButtonBuilder()
+                        .setCustomId(`disabled_tracker_button_${investmentID}`)
+                        .setLabel('השקעה זו אינה פעילה יותר!')
+                        .setStyle(ButtonStyle.Danger)
                         .setDisabled(true);
                     
                     const actionRow = new ActionRowBuilder<ButtonBuilder>()
-                        .addComponents(buttonAdd, buttonRemove);
+                        .addComponents(button);
                     await message.edit({ components: [actionRow] })
                 }
             }
