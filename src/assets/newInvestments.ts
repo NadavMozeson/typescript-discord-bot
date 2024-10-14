@@ -137,7 +137,7 @@ export const sendInvestmentListPicker = withErrorHandling(async (interaction: Co
     for(let i=0; i<menusOptions.length; i++){
         components.push(new ActionRowBuilder<StringSelectMenuBuilder>())
         const selectMenu = new StringSelectMenuBuilder()
-            .setCustomId(customID)
+            .setCustomId(customID + `_${i}`)
             .setPlaceholder(`רשימת תוצאות ${i+1}`)
             .addOptions(menusOptions[i].map(player => 
                     new StringSelectMenuOptionBuilder()
@@ -235,6 +235,9 @@ export const postFirstExitMessage = withErrorHandling(async (interaction: String
             pageData = await checkWhatFunctionToRun(investmentData)
         }
         if (pageData?.image) {
+            pageData.image = await addWatermarkToImage(pageData.image, interaction.guild?.iconURL(), interaction.guild?.name)
+        }
+        if (pageData?.image) {
             const flagEmoji = await countryNameToFlag(investmentData.nation)
             const formattedText = `## ✅ יציאה ראשונה ✅\n` +
                 `### ${flagEmoji} ${investmentData.name.toUpperCase()} ${investmentData.rating} ${flagEmoji}\n` +
@@ -269,6 +272,9 @@ export const postEarlyExitMessage = withErrorHandling(async (interaction: String
                 break
             }
             pageData = await checkWhatFunctionToRun(investmentData)
+        }
+        if (pageData?.image) {
+            pageData.image = await addWatermarkToImage(pageData.image, interaction.guild?.iconURL(), interaction.guild?.name)
         }
         if (pageData?.image) {
             const flagEmoji = await countryNameToFlag(investmentData.nation)
