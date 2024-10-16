@@ -458,6 +458,8 @@ const addWatermarkToImage = withErrorHandling(async (imageBuffer, watermarkImage
     if (!width || !height) {
         console.log('Unable to retrieve image dimensions');
         return imageBuffer
+    } else if (width <= 600) {
+        return imageBuffer
     }
     
     const textOverlay = Buffer.from(
