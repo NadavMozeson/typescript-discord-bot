@@ -453,9 +453,14 @@ const checkWhatFunctionToRun = withErrorHandling(async (data: any) => {
 const addWatermarkToImage = withErrorHandling(async (imageBuffer, watermarkImageURL, watermarkText) => {
     const watermarkImageResponse = await axios.get(watermarkImageURL, { responseType: 'arraybuffer' });
     const watermarkImageBuffer = Buffer.from(watermarkImageResponse.data);
+    const { width, height } = await sharp(imageBuffer).metadata();
+
+    if (!width || !height) {
+        throw new Error('Unable to retrieve image dimensions');
+    }
     
     const textOverlay = Buffer.from(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="736" height="377">
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
             <text x="50%" y="96%" font-size="35" fill="white" text-anchor="middle" font-family="Arial" font-weight="bold" dir="rtl">${watermarkText} @</text>
         </svg>`
     );
