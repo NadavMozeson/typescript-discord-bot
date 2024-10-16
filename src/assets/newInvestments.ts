@@ -456,7 +456,8 @@ const addWatermarkToImage = withErrorHandling(async (imageBuffer, watermarkImage
     const { width, height } = await sharp(imageBuffer).metadata();
 
     if (!width || !height) {
-        throw new Error('Unable to retrieve image dimensions');
+        console.log('Unable to retrieve image dimensions');
+        return imageBuffer
     }
     
     const textOverlay = Buffer.from(
