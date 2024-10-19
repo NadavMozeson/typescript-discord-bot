@@ -153,30 +153,15 @@ export const getPageContent = withErrorHandling(async (url: string) => {
 })
 
 export const getFutbinFoderPageData = withErrorHandling(async function (foderRating: number) {
-    const foderSelectors: { [key: number]: string } = {
-        81: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(1) > div.xs-column',
-        82: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(2) > div.xs-column',
-        83: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(3) > div.xs-column',
-        84: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(4) > div.xs-column',
-        85: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(5) > div.xs-column',
-        86: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(6) > div.xs-column',
-        87: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(7) > div.xs-column',
-        88: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(8) > div.xs-column',
-        89: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(9) > div.xs-column',
-        90: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(10) > div.xs-column',
-        91: 'body > div.widthControl.mainPagePadding > div.cheapestsbcplayerspage.medium-column > div.cheapestsbcplayerslist.m-row.stc-players-wrapper > div:nth-child(11) > div.xs-column',
-    }
-    
-    const selector = foderSelectors[foderRating]
+    const selector = '#content-container > div.extra-columns-wrapper.relative > div.players-table-wrapper.custom-scrollbar.overflow-x > table > tbody'
     const currentDir = dirname(fileURLToPath(import.meta.url));
     const browser = currentDir.includes('sw33t') ? (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })) : (await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], executablePath: process.env.BROWSER_PATH }))
-
     const page: Page = await browser.newPage();
 
     await page.setUserAgent(USER_AGENT_STRING);
 
     await page.setRequestInterception(true);
-
+    
     page.on('request', (request) => {
         const url = request.url();
         if (url.includes('futbin') || url.includes('discordapp')) {
@@ -188,33 +173,23 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
 
     await page.setViewport({
         width: 1200,
-        height: 7520
+        height: 1758
     });
 
-    await page.goto('https://www.futbin.com/stc/cheapest', { waitUntil : "networkidle0", timeout: 60000 });
-
-    Object.values(foderSelectors).forEach(async (tempSelector) => {
-        if (tempSelector != selector) {
-            await page.evaluate((selector: string) => {
-                const element = document.querySelector(selector.replace(' > div.xs-column', ''));
-                if (element) {
-                    (element as HTMLElement).style.display = 'none';
-                }
-            }, tempSelector);
-        }
-    })
+    await page.goto(`https://www.futbin.com/players?ps_price=200%2B&player_rating=${foderRating}-${foderRating}&sort=ps_price&order=asc`, { waitUntil : "networkidle0", timeout: 60000 });
 
     const playerName = `${foderRating} Rated Players`;
-    
+
     const playerRating = foderRating.toString();
     const country = 'Gold Foder'
 
     let pricePC, priceConsole, pcMinPrice, consoleMinPrice
     for (let i = 1; i <= 5; i++) {
         const href = 'https://www.futbin.com' + await page.evaluate((selector, index) => {
-            const element = document.querySelector(`${selector} > a:nth-child(${index})`);
+            const element = document.querySelector(`${selector} > tr:nth-child(${index}) > td.table-name > a`);
             return element ? element.getAttribute('href') : null;
         }, selector, i);
+    
         if (href.includes('/player/')) {
             const playerData = await getFutbinPlayerPageData(href);
             if (playerData && playerData.pricePC && playerData.priceConsole && playerData.minPCPrice && playerData.minConsolePrice) {
@@ -226,36 +201,87 @@ export const getFutbinFoderPageData = withErrorHandling(async function (foderRat
             }
         }
     }
+    
+    await page.evaluate((tbodySelector: string) => {
+        const tbody = document.querySelector(tbodySelector);
+        if (!tbody) return;
 
-    const element: ElementHandle | null = await page.$(selector);
+        const trs = Array.from(tbody.querySelectorAll('tr')).slice(0, 5);
 
-    if (element) {
-        const boundingBox = await element.boundingBox();
-        
-        if (boundingBox) {
-            let marginBoundingBox = {
-                x: boundingBox.x,
-                y: boundingBox.y,
-                width: boundingBox.width,
-                height: boundingBox.height
-            };
-            if (boundingBox.height > 385) {
-                marginBoundingBox = {
-                    x: boundingBox.x,
-                    y: boundingBox.y,
-                    width: boundingBox.width,
-                    height: boundingBox.height - 385
-                };
+        trs.forEach(tr => {
+            const tdToMove = tr.querySelector('td.table-price.no-wrap.platform-ps-only') as HTMLTableCellElement;
+            if (tdToMove) {
+                const tds = Array.from(tr.querySelectorAll('td')) as HTMLTableCellElement[];
+                const tdIndex = tds.indexOf(tdToMove);
+                if (tdIndex !== -1 && tds.length > 1) {
+                    tr.removeChild(tdToMove);
+                    if (tds[1]) {
+                        tr.insertBefore(tdToMove, tds[1]);
+                    } else {
+                        tr.appendChild(tdToMove);
+                    }
+                }
             }
-            const imageBuffer = await page.screenshot({
-                clip: marginBoundingBox
-            });
-            await browser.close();
-            return { image: Buffer.from(imageBuffer), name: playerName, country: country, pricePC: pricePC, priceConsole: priceConsole, rating: playerRating, card: null, minPCPrice: pcMinPrice, minConsolePrice: consoleMinPrice };
-        } 
+        });
+    }, selector);
+
+    const columnWidths = await page.evaluate((tbodySelector) => {
+        const tbody = document.querySelector(tbodySelector);
+        if (!tbody) return null;
+
+        const firstRow = tbody.querySelector('tr');
+        if (!firstRow) return null;
+
+        const columns = firstRow.querySelectorAll('td, th');
+        if (columns.length < 2) return null;
+
+        const width1 = window.getComputedStyle(columns[0]).width;
+        const width2 = window.getComputedStyle(columns[1]).width;
+
+        return {
+            firstColumnWidth: parseInt(width1, 10),
+            secondColumnWidth: parseInt(width2, 10)
+        };
+    }, selector);
+
+    const marginBoundingBox = await page.evaluate((tbodySelector, columnWidths) => {
+        const tbody = document.querySelector(tbodySelector);
+        if (!tbody) return null;
+
+        const trs = Array.from(tbody.querySelectorAll('tr')).slice(0, 5);
+        if (trs.length === 0) return null;
+
+        let minX = Number.POSITIVE_INFINITY;
+        let minY = Number.POSITIVE_INFINITY;
+        let maxX = Number.NEGATIVE_INFINITY;
+        let maxY = Number.NEGATIVE_INFINITY;
+
+        trs.forEach(tr => {
+            const boundingBox = tr.getBoundingClientRect();
+            minX = Math.min(minX, boundingBox.x);
+            minY = Math.min(minY, boundingBox.y);
+            if (columnWidths) {
+                maxX = Math.max(maxX, boundingBox.x + columnWidths.firstColumnWidth + columnWidths.secondColumnWidth);
+            }
+            maxX = Math.max(maxX, boundingBox.x + 340);
+            maxY = Math.max(maxY, boundingBox.y + boundingBox.height);
+        });
+
+        return {
+            x: minX,
+            y: minY,
+            width: maxX - minX,
+            height: maxY - minY
+        };
+    }, selector, columnWidths);
+
+    if (marginBoundingBox) {
+        const imageBuffer = await page.screenshot({
+            clip: marginBoundingBox
+        });
+        await browser.close();
+        return { image: Buffer.from(imageBuffer), name: playerName, country: country, pricePC: pricePC, priceConsole: priceConsole, rating: playerRating, card: null, minPCPrice: pcMinPrice, minConsolePrice: consoleMinPrice };
     }
-    await browser.close();
-    return undefined;
 })
 
 export const getFutbinTOTWPageData = withErrorHandling(async function (foderRating: number) {
