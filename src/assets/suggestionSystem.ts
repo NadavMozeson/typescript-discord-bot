@@ -3,7 +3,7 @@ import { withErrorHandling } from "../utils/errorHandler.js";
 import { config } from "../index.js"
 
 export const handleSuggestion = withErrorHandling(async (message: Message) => {
-    if (message.channelId === config.SERVER.CHANNELS.Suggest.toString()) {
+    if (message.channelId === config.SERVER.CHANNELS.Suggest.toString() || message.channelId === '1297316502537769003') {
         if (!(config.SERVER.INFO.Owners.includes(message.author.id))) {
             await sendSuggestion(message)
             await message.delete()
