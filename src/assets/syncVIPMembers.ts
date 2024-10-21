@@ -101,8 +101,9 @@ const checkToRemoveRole = withErrorHandling(async () => {
     }
 })
 
-export const updateUserForVIP = withErrorHandling(async (userID) => {
-    if (await wordpressDBManager.isUserVIP(userID)) {
+export const updateUserForVIP = withErrorHandling(async (interaction: CommandInteraction) => {
+    const userID = interaction.options.get('משתמש')?.user?.id
+    if (userID && await wordpressDBManager.isUserVIP(userID)) {
         const mainGuild = await client.guilds.fetch(config.SERVER.INFO.ServerId)
         const mainPremiumRole = await mainGuild.roles.fetch(config.SERVER.ROLES.VIP)
         if (mainPremiumRole) {
@@ -110,6 +111,7 @@ export const updateUserForVIP = withErrorHandling(async (userID) => {
                 const member = await mainGuild.members.fetch(userID)
                 if (member && !member.roles.cache.has(mainPremiumRole.id)) {
                     await member.roles.add(mainPremiumRole);
+                    await interaction.reply({ content: 'המשתמש קיבל את הגישות המתאימות ✅', ephemeral: true })
                 }
             } catch (error) {
                 if (!(error instanceof DiscordAPIError && error.code === 10007)) {
@@ -131,6 +133,8 @@ export const updateUserForVIP = withErrorHandling(async (userID) => {
                 }
             }
         }
+    } else {
+        await interaction.reply({ content: 'המשתמש לא רכש מנוי פרימיום ❌', ephemeral: true })
     }
 })
 

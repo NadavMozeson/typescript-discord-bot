@@ -53,7 +53,7 @@ const handleSlashCommands = withErrorHandling(async (interaction: CommandInterac
     } else if (interaction.commandName === 'sync_vip') {
         await syncAllVIPs(interaction)
     } else if (interaction.commandName === 'sync_user'){
-        await updateUserForVIP(interaction.options.get('משתמש')?.user?.id)
+        await updateUserForVIP(interaction)
     }
 })
 

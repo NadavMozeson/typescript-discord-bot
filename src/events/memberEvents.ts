@@ -3,7 +3,7 @@ import { memberBanEmbed, memberUnbanEmbed, memberTimeoutEmbed, newVIPMember } fr
 import { withErrorHandling } from '../utils/errorHandler.js';
 import { config, client } from '../index.js';
 import { createPrivateChat, deletePrivateChat } from '../assets/privateChats.js';
-import { newUserJoinVIPServer, updateUserForVIP } from '../assets/syncVIPMembers.js';
+import { newUserJoinVIPServer } from '../assets/syncVIPMembers.js';
 
 type GuildBanEvent = {
   user: { bot: boolean; id: string; };
