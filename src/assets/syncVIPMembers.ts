@@ -103,33 +103,42 @@ const checkToRemoveRole = withErrorHandling(async () => {
 
 export const updateUserForVIP = withErrorHandling(async (interaction: CommandInteraction) => {
     const userID = interaction.options.get('משתמש')?.user?.id
+    
     if (userID && await wordpressDBManager.isUserVIP(userID)) {
-        const mainGuild = await client.guilds.fetch(config.SERVER.INFO.ServerId)
-        const mainPremiumRole = await mainGuild.roles.fetch(config.SERVER.ROLES.VIP)
-        if (mainPremiumRole) {
-            try {
-                const member = await mainGuild.members.fetch(userID)
-                if (member && !member.roles.cache.has(mainPremiumRole.id)) {
-                    await member.roles.add(mainPremiumRole);
-                    await interaction.reply({ content: 'המשתמש קיבל את הגישות המתאימות ✅', ephemeral: true })
-                }
-            } catch (error) {
-                if (!(error instanceof DiscordAPIError && error.code === 10007)) {
-                    throw error
+        if (interaction.guildId === config.SERVER.INFO.ServerId) {
+            const mainGuild = await client.guilds.fetch(config.SERVER.INFO.ServerId)
+            const mainPremiumRole = await mainGuild.roles.fetch(config.SERVER.ROLES.VIP)
+            if (mainPremiumRole) {
+                try {
+                    const member = await mainGuild.members.fetch(userID)
+                    if (member && !member.roles.cache.has(mainPremiumRole.id)) {
+                        await member.roles.add(mainPremiumRole);
+                        await interaction.reply({ content: 'המשתמש קיבל את הגישות המתאימות ✅', ephemeral: true })
+                    } else {
+                        await interaction.reply({ content: 'למשתמש יש כבר את הגישות המתאימות ⚠️', ephemeral: true })
+                    }
+                } catch (error) {
+                    if (!(error instanceof DiscordAPIError && error.code === 10007)) {
+                        throw error
+                    }
                 }
             }
-        }
-        const vipGuild = await client.guilds.fetch(config.VIP_SERVER.INFO.ServerId)
-        const vipPremiumRole = await vipGuild.roles.fetch(config.VIP_SERVER.ROLES.VIP)
-        if (vipPremiumRole) {
-            try {
-                const member = await vipGuild.members.fetch(userID)
-                if (member && !member.roles.cache.has(vipPremiumRole.id)) {
-                    await member.roles.add(vipPremiumRole);
-                }
-            } catch (error) {
-                if (!(error instanceof DiscordAPIError && error.code === 10007)) {
-                    throw error
+        } else {
+            const vipGuild = await client.guilds.fetch(config.VIP_SERVER.INFO.ServerId)
+            const vipPremiumRole = await vipGuild.roles.fetch(config.VIP_SERVER.ROLES.VIP)
+            if (vipPremiumRole) {
+                try {
+                    const member = await vipGuild.members.fetch(userID)
+                    if (member && !member.roles.cache.has(vipPremiumRole.id)) {
+                        await member.roles.add(vipPremiumRole);
+                        await interaction.reply({ content: 'המשתמש קיבל את הגישות המתאימות ✅', ephemeral: true })
+                    } else {
+                        await interaction.reply({ content: 'למשתמש יש כבר את הגישות המתאימות ⚠️', ephemeral: true })
+                    }
+                } catch (error) {
+                    if (!(error instanceof DiscordAPIError && error.code === 10007)) {
+                        throw error
+                    }
                 }
             }
         }
