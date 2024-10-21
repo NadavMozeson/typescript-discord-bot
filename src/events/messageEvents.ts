@@ -19,8 +19,8 @@ export async function setupMessagesEvents() {
     client.on(
 		'messageDelete',
 		withErrorHandling(async (message: Message | PartialMessage) => {
-            if (message.author){
-                if ((message.channelId.toString() !== config.SERVER.CHANNELS.Suggest.toString()) && !message.author.bot && message.guildId === config.SERVER.INFO.ServerId) {
+            if (message.author && message.guild){
+                if ((message.channelId.toString() !== config.SERVER.CHANNELS.Suggest.toString()) && !message.author.bot && message.guildId === config.SERVER.INFO.ServerId && (message.channelId.toString() !== '1297316502537769003')) {
                     await messageDeleteEmbed(message)
                 }
             }
