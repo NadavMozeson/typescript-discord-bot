@@ -64,8 +64,19 @@ class WebsiteDatabaseManager {
 
   public async getAllVIPs(): Promise<string[] | null> {
     try {
-        const findResults = await this.sendSQLCommand(`SELECT meta_value FROM wp_usermeta WHERE meta_key = "_ets_pmpro_discord_user_id" AND user_id IN (SELECT user_id FROM wp_pmpro_memberships_users WHERE membership_id IN (4, 5, 6) AND status = "active");`);
-        return findResults.map((result: any) => result.meta_value)
+      const findResults = await this.sendSQLCommand(`
+        SELECT meta_value 
+        FROM wp_usermeta 
+        WHERE meta_key = "_ets_pmpro_discord_user_id" 
+        AND user_id IN (
+            SELECT user_id 
+            FROM wp_pmpro_memberships_users 
+            WHERE membership_id IN (4, 5, 6) 
+            AND status = "active" 
+            AND (enddate = '0000-00-00' OR enddate > NOW())
+        );
+      `);
+      return findResults.map((result: any) => result.meta_value)
     } catch (error) {
         console.error('Error checking if user is VIP', error)
     }
