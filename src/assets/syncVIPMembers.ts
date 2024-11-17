@@ -1,9 +1,9 @@
-import { Colors, CommandInteraction, DiscordAPIError, EmbedBuilder, GuildMember, TextChannel } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, CommandInteraction, DiscordAPIError, EmbedBuilder, GuildMember, NewsChannel, TextChannel } from "discord.js";
 import { client, config } from "../index.js";
 import { withErrorHandling } from "../utils/errorHandler.js";
 import { wordpressDBManager } from "../utils/websiteDatabaseManage.js";
 
-export const handleVIPRequestCommand = withErrorHandling(async (interaction: CommandInteraction) => {
+export const handleVIPRequestCommand = withErrorHandling(async (interaction: CommandInteraction | ButtonInteraction) => {
     await interaction.reply({ content: "⌛ בודק נתונים, אנא המתן... ⌛", ephemeral: true });
     const userID = interaction.user.id
     if (await wordpressDBManager.isUserVIP(userID)) {
@@ -179,4 +179,57 @@ export const newUserJoinVIPServer = withErrorHandling(async (member: GuildMember
         }
         await welcomeChannel.send({ embeds: [embed] });
     }
+})
+
+export const vipHelpMessage = withErrorHandling(async () => {
+    const channel = await client.channels.fetch(config.SERVER.CHANNELS.SyncGuide.toString())
+    const text = `
+# איך לקבל גישות למתחם הפרימיום לאחר רכישה באתר שלנו 🏅
+קישור לרכישת מנוי: https://oziman.shop
+
+## מעבר לעמוד "אזור אישי"
+לאחר רכישת המנוי שלכם. עברו לעמוד "אזור אישי" שם תוכלו לראות את המידע האישי שלכם.
+
+## ערוך פרופיל
+יש ללחוץ על "ערוך פרופיל", מופיע בתחתית האזור "החשבון שלי"
+
+## קישור דיסקורד
+יש ללחוץ על הכפתור הירוק "קישור דיסקורד", אם הדיסקורד שלכם מקושר יופיע כפתור אדום של ביטול קישור.
+
+## אישור גישות
+יש ללחוץ על כפתור האישור אשר יופיע בתחתית העמוד החדש שנפתח לכם.
+
+## המתנה
+יש להמתין עד שעה לקבלת הגישות.
+ניתן ללחוץ על הכפתור למטה על מנת לדלג על שלב ההמתנה 👇
+
+## וזהו
+חיברתם בהצלחה את החשבון באתר שלנו לחשבון הדיסקורד שלכם.
+עכשיו אתם יכולים לראות את כל ההרשאות אשר מגיעות לכם.
+
+*מדריך זה פונה לחברי שרת אשר נרשמו בתור חברי הפרימיום באתר הרשמי שלנו*
+*לעזרה ניתן לפתוח טיקט*
+
+תודה רבה על תמיכתם ❤️
+
+**[||@everyone||]**
+`
+
+    const regularButton = new ButtonBuilder()
+        .setCustomId('sync-user-vip-button')
+        .setLabel('דילוג על שלב ההמתנה')
+        .setEmoji('⌛')
+        .setStyle(ButtonStyle.Secondary)
+
+    const buttonsRow = new ActionRowBuilder<ButtonBuilder>()
+        .addComponents(regularButton);
+        
+    if (channel instanceof TextChannel || channel instanceof NewsChannel) {
+        await channel.messages.fetch()
+        if (channel.lastMessage === null){
+            await channel.send({ content: text, components: [buttonsRow] });
+        } 
+	} else {
+		console.warn(`Channel with ID ${config.SERVER.CHANNELS.Ticket} is not a text or news channel.`);
+	}
 })

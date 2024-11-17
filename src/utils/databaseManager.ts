@@ -143,6 +143,7 @@ interface Config {
         DailyLogin: string;
         VotingChannel: string[];
         FAQ: string;
+        SyncGuide: string;
       };
     };
     VIP_SERVER: {

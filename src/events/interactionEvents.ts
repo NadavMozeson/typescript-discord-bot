@@ -30,6 +30,8 @@ const handleButtons = withErrorHandling(async (interaction: ButtonInteraction) =
         await handleNewFAQClick(interaction)
     } else if (interaction.customId.toString().includes('confirm_delete_inv_')) {
         await confirmDeleteInvestment(interaction)
+    } else if (interaction.customId.toString().includes('sync-user-vip-button')) {
+        await handleVIPRequestCommand(interaction)
     }
 })
 
