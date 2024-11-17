@@ -19,7 +19,7 @@ export const handleVIPRequestCommand = withErrorHandling(async (interaction: Com
                 if (member) {
                     await member.roles.add(premiumRole);
                     if (member.roles.cache.has(premiumRole.id)) {
-                        await interaction.editReply({ content: "✅ קיבלת את כלל הגישות בהצלחה! מוזמן ללכת ל https://discord.com/channels/919996404368306227/1287059823258763346 בשביל לראות הסבר על כל ההטבות והחדרים ✅" });
+                        await interaction.editReply({ content: "✅ קיבלת את כלל הגישות! מוזמן ללכת לצאט https://discord.com/channels/919996404368306227/1293237648915435715 על מנת להיכנס למתחם הפרימיום ✅" });
                     } else {
                         await interaction.editReply({ content: "❌ קרתה שגיאה, אנחנו רואים שרכשת מנוי וקישרת את החשבון. אנא נסה שוב מאוחר יותר או פנה אליינו בטיקט ❌" });
                     }
