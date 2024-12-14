@@ -17,7 +17,6 @@ class WebsiteDatabaseManager {
       }
 
       const data = await response.json();
-      console.log(data);
       return data.is_vip;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -39,7 +38,6 @@ class WebsiteDatabaseManager {
       }
 
       const data = await response.json();
-      console.log(data);
       if (data.status === 'success') {
         return data.vips;
       } else {
