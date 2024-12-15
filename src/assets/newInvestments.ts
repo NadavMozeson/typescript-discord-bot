@@ -205,7 +205,8 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
                 const attachment = msg.attachments.first();
                 const files: (Attachment | BufferResolvable | Stream | JSONEncodable<APIAttachment> | AttachmentBuilder | AttachmentPayload)[] = [pageData.image];
                 if (attachment) {
-                    files.push(attachment);
+                    const response = await axios.get(attachment.url, { responseType: 'arraybuffer' });
+                    files.push(new AttachmentBuilder(Buffer.from(response.data), { name: attachment.name || 'attachment.jpg' }));
                 }
                 const profitChannel = await client.channels.fetch(config.SERVER.CHANNELS.Profit.toString())
                 const vipChannel = await client.channels.fetch(config.VIP_SERVER.CHANNELS.Profit.toString())
