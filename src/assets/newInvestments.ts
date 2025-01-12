@@ -425,6 +425,8 @@ export const countryNameToFlag = async (countryName: string) => {
             return ':england:'
         } else if (countryName.toLowerCase() === 'korea republic') {
             return ':flag_kr:'
+        } else if (countryName.toLowerCase() === 'saudi arabia') {
+            return ':flag_sa:'
         }
         const response = await axios.get(`https://restcountries.com/v3.1/name/${countryName}`);
         const countryData: {altSpellings: string}[] = response.data;
