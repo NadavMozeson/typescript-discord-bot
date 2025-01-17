@@ -478,7 +478,8 @@ const addWatermarkToImage = withErrorHandling(async (imageBuffer, watermarkImage
 
 const generateProfitImage = withErrorHandling(async (newImage: Buffer, investmentMsg: Message) => {
     const attachment = investmentMsg.attachments.first();
-    const watermarkPath = path.resolve(process.cwd(), 'src', 'images', 'profit-watermark.png');
+    const watermarkBorderPath = path.resolve(process.cwd(), 'src', 'images', 'profit-watermark-border.png');
+    const watermarkTextPath = path.resolve(process.cwd(), 'src', 'images', 'profit-watermark-text.png');
     const files: (Attachment | BufferResolvable | Stream | JSONEncodable<APIAttachment> | AttachmentBuilder | AttachmentPayload)[] = [];
     if (attachment) {
         const fileUrl = attachment.url;
@@ -487,7 +488,8 @@ const generateProfitImage = withErrorHandling(async (newImage: Buffer, investmen
 
         const pageImageLoaded = await loadImage(newImage);
         const beforeImageLoaded = await loadImage(beforeImage);
-        const watermarkImage = await loadImage(watermarkPath);
+        const borderImage = await loadImage(watermarkBorderPath);
+        const textImage = await loadImage(watermarkTextPath);
 
         const canvasWidth = Math.max(pageImageLoaded.width, beforeImageLoaded.width);
         const canvasHeight = pageImageLoaded.height + beforeImageLoaded.height;
@@ -503,7 +505,15 @@ const generateProfitImage = withErrorHandling(async (newImage: Buffer, investmen
         const watermarkX = (canvasWidth - watermarkWidth) / 2;
         const watermarkY = (canvasHeight - watermarkHeight) / 2;
         ctx.globalAlpha = 1;
-        ctx.drawImage(watermarkImage, watermarkX, watermarkY, watermarkWidth, watermarkHeight);
+        ctx.drawImage(borderImage, watermarkX, watermarkY, watermarkWidth, watermarkHeight);
+
+        const textHeight = canvasHeight 
+        const textWidth = (textImage.width / textImage.height) * textHeight;
+        const textX = (canvasWidth - textWidth) / 2;
+        const textY = (canvasHeight - textHeight) / 2;
+
+        // Draw the text image with adjusted dimensions
+        ctx.drawImage(textImage, textX, textY, textWidth, textHeight);
 
         const combinedImageBuffer = canvas.toBuffer();
         const combinedImageAttachment = new AttachmentBuilder(combinedImageBuffer, { name: "profit-image.jpg" });
