@@ -8,6 +8,8 @@ import { client, config } from "../index.js"
 import { Stream } from "stream"
 import { generateTrackerButtons, notifyInvestmentTracker } from "./investmentTracker.js"
 import sharp from 'sharp';
+import { createCanvas, loadImage } from 'canvas';
+import path from "path"
 
 const RETRIES = 5
 let MESSAGES_BUFFER: { [key: string]: string } = {}
@@ -80,7 +82,7 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
         pageData = await getFutbinPlayerPageData('https://www.futbin.com' + paramsData.url)
     }
     if (pageData?.image) {
-        pageData.image = await addWatermarkToImage(pageData.image, interaction.guild?.iconURL(), interaction.guild?.name)
+        pageData.image = await addWatermarkToImage(pageData.image, interaction.guild?.iconURL())
     }
     if (pageData?.country && pageData.minPCPrice && pageData.minConsolePrice && pageData.pricePC && pageData.priceConsole && pageData.name && pageData.rating && pageData.card) {
         const flagEmoji = await countryNameToFlag(pageData.country)
@@ -169,7 +171,7 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
             } else {
                 guild = await client.guilds.fetch(config.SERVER.INFO.ServerId)
             }
-            pageData.image = await addWatermarkToImage(pageData.image, guild.iconURL(), guild.name)
+            pageData.image = await addWatermarkToImage(pageData.image, guild.iconURL())
         }
         if (pageData?.pricePC && pageData.priceConsole && pageData.image) {
             const flagEmoji = await countryNameToFlag(investmentData.nation)
@@ -202,15 +204,7 @@ export const postProfitMessage = withErrorHandling(async (interaction: StringSel
             const channel = await client.channels.fetch(investmentData.channel.toString())
             if (channel instanceof TextChannel) {
                 const msg = await channel.messages.fetch(investmentData.msg.toString())
-                const attachment = msg.attachments.first();
-                const files: (Attachment | BufferResolvable | Stream | JSONEncodable<APIAttachment> | AttachmentBuilder | AttachmentPayload)[] = [pageData.image];
-                if (attachment) {
-                    const fileUrl = attachment.url;
-                    const response = await axios.get(fileUrl, { responseType: "arraybuffer" });
-                    const beforeImage = Buffer.from(response.data);
-                    const beforeImageAttachment = new AttachmentBuilder(beforeImage, { name: "before-image.jpg" });
-                    files.push(beforeImageAttachment);
-                }
+                const files = await generateProfitImage(pageData.image, msg)
                 const profitChannel = await client.channels.fetch(config.SERVER.CHANNELS.Profit.toString())
                 const vipChannel = await client.channels.fetch(config.VIP_SERVER.CHANNELS.Profit.toString())
                 if ((profitChannel instanceof TextChannel) && (vipChannel instanceof TextChannel)) {
@@ -239,7 +233,7 @@ export const postFirstExitMessage = withErrorHandling(async (interaction: String
             pageData = await checkWhatFunctionToRun(investmentData)
         }
         if (pageData?.image) {
-            pageData.image = await addWatermarkToImage(pageData.image, interaction.guild?.iconURL(), interaction.guild?.name)
+            pageData.image = await addWatermarkToImage(pageData.image, interaction.guild?.iconURL())
         }
         if (pageData?.image) {
             const flagEmoji = await countryNameToFlag(investmentData.nation)
@@ -278,7 +272,7 @@ export const postEarlyExitMessage = withErrorHandling(async (interaction: String
             pageData = await checkWhatFunctionToRun(investmentData)
         }
         if (pageData?.image) {
-            pageData.image = await addWatermarkToImage(pageData.image, interaction.guild?.iconURL(), interaction.guild?.name)
+            pageData.image = await addWatermarkToImage(pageData.image, interaction.guild?.iconURL())
         }
         if (pageData?.image) {
             const flagEmoji = await countryNameToFlag(investmentData.nation)
@@ -456,7 +450,7 @@ const checkWhatFunctionToRun = withErrorHandling(async (data: any) => {
     }
 })
 
-const addWatermarkToImage = withErrorHandling(async (imageBuffer, watermarkImageURL, watermarkText) => {
+const addWatermarkToImage = withErrorHandling(async (imageBuffer, watermarkImageURL) => {
     const watermarkImageResponse = await axios.get(watermarkImageURL, { responseType: 'arraybuffer' });
     const watermarkImageBuffer = Buffer.from(watermarkImageResponse.data);
     const { width, height } = await sharp(imageBuffer).metadata();
@@ -467,12 +461,6 @@ const addWatermarkToImage = withErrorHandling(async (imageBuffer, watermarkImage
     } else if (width <= 600) {
         return imageBuffer
     }
-    
-    const textOverlay = Buffer.from(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-            <text x="50%" y="96%" font-size="35" fill="white" text-anchor="middle" font-family="Arial" font-weight="bold" dir="rtl">${watermarkText} @</text>
-        </svg>`
-    );
 
     const editedImageBuffer = await sharp(imageBuffer)
         .composite([
@@ -481,14 +469,48 @@ const addWatermarkToImage = withErrorHandling(async (imageBuffer, watermarkImage
                 left: 415,
                 top: 145,
                 blend: 'over',
-            },
-            {
-                input: textOverlay,
-                blend: 'over',
-                gravity: 'south',
             }
         ])
         .toBuffer();
 
     return editedImageBuffer;
+})
+
+const generateProfitImage = withErrorHandling(async (newImage: Buffer, investmentMsg: Message) => {
+    const attachment = investmentMsg.attachments.first();
+    const watermarkPath = path.resolve(process.cwd(), 'src', 'images', 'profit-watermark.png');
+    const files: (Attachment | BufferResolvable | Stream | JSONEncodable<APIAttachment> | AttachmentBuilder | AttachmentPayload)[] = [];
+    if (attachment) {
+        const fileUrl = attachment.url;
+        const response = await axios.get(fileUrl, { responseType: "arraybuffer" });
+        const beforeImage = Buffer.from(response.data);
+
+        const pageImageLoaded = await loadImage(newImage);
+        const beforeImageLoaded = await loadImage(beforeImage);
+        const watermarkImage = await loadImage(watermarkPath);
+
+        const canvasWidth = Math.max(pageImageLoaded.width, beforeImageLoaded.width);
+        const canvasHeight = pageImageLoaded.height + beforeImageLoaded.height;
+
+        const canvas = createCanvas(canvasWidth, canvasHeight);
+        const ctx = canvas.getContext('2d');
+
+        ctx.drawImage(pageImageLoaded, 0, 0);
+        ctx.drawImage(beforeImageLoaded, 0, pageImageLoaded.height);
+
+        const watermarkWidth = canvasWidth;
+        const watermarkHeight = canvasHeight;
+        const watermarkX = (canvasWidth - watermarkWidth) / 2;
+        const watermarkY = (canvasHeight - watermarkHeight) / 2;
+        ctx.globalAlpha = 1;
+        ctx.drawImage(watermarkImage, watermarkX, watermarkY, watermarkWidth, watermarkHeight);
+
+        const combinedImageBuffer = canvas.toBuffer();
+        const combinedImageAttachment = new AttachmentBuilder(combinedImageBuffer, { name: "profit-image.jpg" });
+
+        files.push(combinedImageAttachment);
+    } else {
+        files.push(new AttachmentBuilder(newImage, { name: "profit-image.jpg" }));
+    }
+    return files;
 })
