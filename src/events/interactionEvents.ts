@@ -4,7 +4,7 @@ import { ButtonInteraction, CommandInteraction, GuildMember, Interaction, String
 import { handleTicketButtons } from '../assets/ticketButtons.js';
 import { handleOpenDMInteraction } from '../assets/privateChats.js';
 import { confirmDeleteInvestment, createNewInvestment, deleteInvestment, postEarlyExitMessage, postFirstExitMessage, postNewFoderInvestment, postNewInvestment, postNewTOTWInvestment, postProfitMessage, sendInvestmentListPicker } from '../assets/newInvestments.js';
-import { handelTrackerButtonClick } from '../assets/investmentTracker.js';
+import { generateTrackerListMessage, handelTrackerButtonClick } from '../assets/investmentTracker.js';
 import { handleTeamSuggest } from '../assets/teamUpgrades.js';
 import { handleNewFAQ, handleNewFAQClick } from '../assets/FAQ.js';
 import { handleVIPRequestCommand, syncAllVIPs, updateUserForVIP } from '../assets/syncVIPMembers.js';
@@ -56,6 +56,8 @@ const handleSlashCommands = withErrorHandling(async (interaction: CommandInterac
         await syncAllVIPs(interaction)
     } else if (interaction.commandName === 'sync_user'){
         await updateUserForVIP(interaction)
+    } else if(interaction.commandName === 'list_tracker'){
+        await generateTrackerListMessage(interaction)
     }
 })
 

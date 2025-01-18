@@ -2,7 +2,7 @@ import { withErrorHandling } from "../utils/errorHandler.js"
 import { client, config } from "../index.js"
 import { dbManager } from "../utils/databaseManager.js"
 import { countryNameToFlag } from "./newInvestments.js"
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Message, TextChannel } from "discord.js"
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, Message, TextChannel, User } from "discord.js"
 
 export const updateTrackerMessage = withErrorHandling(async () => {
     const allChannel = await client.channels.fetch(config.SERVER.CHANNELS.InvestmentTracker.everyone.toString())
@@ -167,4 +167,21 @@ export const disableInvestmentButtons = withErrorHandling(async (investmentID: s
             }
         }
     }
+})
+
+export const generateTrackerListMessage = withErrorHandling(async (interaction: CommandInteraction) => {
+    const investments = await dbManager.InvestmentsTracker.getUserTrackerInvestments(interaction.user.id);
+    let text = "## השקעות ברשימת מעקב"
+    for (const investment of investments){
+        if (investment !== null && investment.country !== null && investment.name !== null) {
+            let ServerId = config.SERVER.INFO.ServerId;
+            if (investment.vip) {
+                ServerId = config.VIP_SERVER.INFO.ServerId;
+            }
+            const msgUrl = `https://discord.com/channels/${ServerId}/${investment.channel}/${investment.msg}`
+            const flag = await countryNameToFlag(investment.nation)
+            text += `\n### ${flag} ${investment.name} ${investment.rating}\n` + msgUrl;
+        }
+    }
+    await interaction.reply({ content: text, ephemeral: true });
 })

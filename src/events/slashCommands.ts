@@ -16,6 +16,7 @@ export async function setupSlashCommands() {
         await client.application.commands.create(VIP)
         await client.application.commands.create(SyncVIP)
         await client.application.commands.create(SyncVIPForUser)
+        await client.application.commands.create(ListTracker)
     }
 }
 
@@ -217,3 +218,7 @@ const SyncVIPForUser = new SlashCommandBuilder()
               .setDescription('שעליו לבצע את הסנכרון')
               .setRequired(true)
     )
+
+const ListTracker = new SlashCommandBuilder()
+    .setName('list_tracker')
+    .setDescription('מחזיר את רשמית ההשקעות שאתם מבצעים עליהם מעקב')

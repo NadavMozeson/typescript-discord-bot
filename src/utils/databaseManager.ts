@@ -313,6 +313,14 @@ class InvestmentsTrackerManager {
     await disableInvestmentButtons(investmentID)
     return await this.InvestmentsTrackerHandler.bulkDeleteData({ 'investment': investmentID })
   }
+  async getUserTrackerInvestments(userID: string){
+    const investments = await this.InvestmentsTrackerHandler.getAllDataWithSearch({ 'user': userID })
+    let result = []
+    for (const investment_id of investments) {
+      result.push(await dbManager.Investments.getInvestmentByID(investment_id.investment))
+    }
+    return result
+  }
 }
 
 class FAQManager {
