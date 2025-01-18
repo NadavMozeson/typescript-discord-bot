@@ -170,6 +170,7 @@ export const disableInvestmentButtons = withErrorHandling(async (investmentID: s
 })
 
 export const generateTrackerListMessage = withErrorHandling(async (interaction: CommandInteraction) => {
+    await interaction.reply({ content: "אוסף נתונים...", ephemeral: true });
     const investments = await dbManager.InvestmentsTracker.getUserTrackerInvestments(interaction.user.id);
     let text = "## השקעות ברשימת מעקב"
     for (const investment of investments){
@@ -183,5 +184,5 @@ export const generateTrackerListMessage = withErrorHandling(async (interaction: 
             text += `\n### ${flag} ${investment.name} ${investment.rating}\n` + msgUrl;
         }
     }
-    await interaction.reply({ content: text, ephemeral: true });
+    await interaction.editReply({ content: text });
 })
