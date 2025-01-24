@@ -10,6 +10,7 @@ import { generateTrackerButtons, notifyInvestmentTracker } from "./investmentTra
 import sharp from 'sharp';
 import { createCanvas, loadImage } from 'canvas';
 import path from "path"
+import * as fs from 'fs';
 
 const RETRIES = 5
 let MESSAGES_BUFFER: { [key: string]: string } = {}
@@ -106,6 +107,7 @@ export const postNewInvestment = withErrorHandling(async (interaction: StringSel
         const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
         let isVIP = interaction.guildId === config.VIP_SERVER.INFO.ServerId
         if (msg) {
+            fs.writeFileSync(`./src/images/investments/investment_${msg.id}.png`, new Uint8Array(pageData.image));
             const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com' + paramsData.url, pageData.country, pageData.rating, pageData.card, paramsData.risk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
             await msg.edit({ components: [await generateTrackerButtons(insertedData.insertedId.toString())] })
         }
@@ -290,6 +292,11 @@ export const postEarlyExitMessage = withErrorHandling(async (interaction: String
                 const msg = await exitChannel.send({ content: formattedText, files: [pageData.image] });
                 await notifyInvestmentTracker(msg, commandData.id)
             }
+            try{
+                fs.unlinkSync(`./src/images/investments/investment_${investmentData.msg}.png`);
+            } catch (error) {
+                console.log('Error reading image file:', `investment_${investmentData.msg}.png`);
+            }
             await dbManager.Investments.deleteInvestmentByID(commandData.id)
         }
     }
@@ -332,6 +339,7 @@ export const postNewFoderInvestment = withErrorHandling(async (interaction: Comm
             const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
             let isVIP = interaction.guildId === config.VIP_SERVER.INFO.ServerId
             if (msg) {
+                fs.writeFileSync(`./src/images/investments/investment_${msg.id}.png`, new Uint8Array(pageData.image));
                 const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com/stc/cheapest', pageData.country, '', 'פודר', investmentRisk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
                 await msg.edit({ components: [await generateTrackerButtons(insertedData.insertedId.toString())] })
             }
@@ -378,6 +386,7 @@ export const postNewTOTWInvestment = withErrorHandling(async (interaction: Comma
             const msg = await interaction.channel?.send({ content: formattedText, files: [pageData.image] });
             let isVIP = interaction.guildId === config.VIP_SERVER.INFO.ServerId
             if (msg) {
+                fs.writeFileSync(`./src/images/investments/investment_${msg.id}.png`, new Uint8Array(pageData.image));
                 const insertedData = await dbManager.Investments.createNewInvestment(pageData.name, 'https://www.futbin.com/stc/cheapest', pageData.country, '', 'פודר', investmentRisk, interaction.channelId, priceConsoleLabel, pricePCLabel, interaction.user.id, msg.id, isVIP)
                 await msg.edit({ components: [await generateTrackerButtons(insertedData.insertedId.toString())] })
             }
@@ -405,6 +414,14 @@ export const deleteInvestment = withErrorHandling(async (interaction: StringSele
 
 export const confirmDeleteInvestment = withErrorHandling(async (interaction: ButtonInteraction) => {
     const id = interaction.customId.split('confirm_delete_inv_')[1]
+    const investmentData = await dbManager.Investments.getInvestmentByID(id)
+    if (investmentData) {
+        try{
+            fs.unlinkSync(`./src/images/investments/investment_${investmentData.msg}.png`);
+        } catch (error) {
+            console.log('Error reading image file:', `investment_${investmentData.msg}.png`);
+        }
+    }
     await dbManager.Investments.deleteInvestmentByID(id)
     await interaction.update({ content: 'נמחקה ההשקעה מהמסד נתונים', components: [] })
 })
@@ -477,10 +494,54 @@ const addWatermarkToImage = withErrorHandling(async (imageBuffer, watermarkImage
 })
 
 const generateProfitImage = withErrorHandling(async (newImage: Buffer, investmentMsg: Message) => {
-    const attachment = investmentMsg.attachments.first();
     const watermarkBorderPath = path.resolve(process.cwd(), 'src', 'images', 'profit-watermark-border.png');
     const watermarkTextPath = path.resolve(process.cwd(), 'src', 'images', 'profit-watermark-text.png');
     const files: (Attachment | BufferResolvable | Stream | JSONEncodable<APIAttachment> | AttachmentBuilder | AttachmentPayload)[] = [];
+    try {
+        const imageBuffer = fs.readFileSync(`./src/images/investments/investment_${investmentMsg.id}.png`);
+        fs.unlinkSync(`./src/images/investments/investment_${investmentMsg.id}.png`);
+        if (imageBuffer) {    
+            const pageImageLoaded = await loadImage(newImage);
+            const beforeImageLoaded = await loadImage(imageBuffer);
+            const borderImage = await loadImage(watermarkBorderPath);
+            const textImage = await loadImage(watermarkTextPath);
+    
+            const canvasWidth = Math.max(pageImageLoaded.width, beforeImageLoaded.width);
+            const canvasHeight = pageImageLoaded.height + beforeImageLoaded.height;
+    
+            const canvas = createCanvas(canvasWidth, canvasHeight);
+            const ctx = canvas.getContext('2d');
+    
+            ctx.drawImage(pageImageLoaded, 0, 0);
+            ctx.drawImage(beforeImageLoaded, 0, pageImageLoaded.height);
+    
+            const watermarkWidth = canvasWidth;
+            const watermarkHeight = canvasHeight;
+            const watermarkX = (canvasWidth - watermarkWidth) / 2;
+            const watermarkY = (canvasHeight - watermarkHeight) / 2;
+            ctx.globalAlpha = 1;
+            ctx.drawImage(borderImage, watermarkX, watermarkY, watermarkWidth, watermarkHeight);
+    
+            const textHeight = canvasHeight 
+            const textWidth = (textImage.width / textImage.height) * textHeight;
+            const textX = (canvasWidth - textWidth) / 2;
+            const textY = (canvasHeight - textHeight) / 2;
+    
+            // Draw the text image with adjusted dimensions
+            ctx.drawImage(textImage, textX, textY, textWidth, textHeight);
+    
+            const combinedImageBuffer = canvas.toBuffer();
+            const combinedImageAttachment = new AttachmentBuilder(combinedImageBuffer, { name: "profit-image.jpg" });
+    
+            files.push(combinedImageAttachment);
+        } else {
+            files.push(new AttachmentBuilder(newImage, { name: "profit-image.jpg" }));
+        }
+        return files;
+    } catch (error) {
+        console.log('Error reading image file:', `investment_${investmentMsg.id}.png`);
+    }
+    const attachment = investmentMsg.attachments.first();
     if (attachment) {
         const fileUrl = attachment.url;
         const response = await axios.get(fileUrl, { responseType: "arraybuffer" });
