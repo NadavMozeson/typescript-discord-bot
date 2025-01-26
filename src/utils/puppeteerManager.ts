@@ -32,11 +32,22 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (url : s
 
     const urlParts = url.split('/');
     const playerNameWithHyphens = urlParts[urlParts.length - 1];
-
-    const playerName = playerNameWithHyphens
+    
+    let playerName = playerNameWithHyphens
         .split('-') 
         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).toString().replace(',', ' ');
-    
+
+    if (playerNameWithHyphens.split('-').length > 2) {
+        const nameOnCard = await page.evaluate((selector) => {
+            const element = document.querySelector(selector);
+            return element ? element.textContent : null;
+        }, 'body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.column > div.m-column.relative > div.player-header-section > div > div.player-header-card-section.full-height.minus-margin-top-16 > div:nth-child(1) > div > a > div > div.playercard-25-name-stats-info-wrapper > div.playercard-25-name.text-ellipsis');
+        
+        if (nameOnCard) {
+            playerName = nameOnCard;
+        }
+    }
+
     const playerRating = await page.evaluate((selector) => {
         const element = document.querySelector(selector);
         return element ? element.textContent : null;
