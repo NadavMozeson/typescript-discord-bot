@@ -12,18 +12,19 @@ export const updateExpiringMessage = withErrorHandling(async () => {
 });
 
 const sendExpiringMessage = withErrorHandling(async () => {
-  //const expiringVIPs = await wordpressDBManager.getExpiringVIPs();
-  const expiringVIPs = ["252397852641198101"];
+  const expiringVIPs = await wordpressDBManager.getExpiringVIPs();
   if (!expiringVIPs) return;
   const surveyLink =
     "https://docs.google.com/forms/d/e/1FAIpQLSc1AGrQ_cuoNUJ7-CDWqGA1-G8hKZXzaTLXDfV7hJeFlH2Njg/viewform?usp=header";
   for (const id of expiringVIPs) {
+    console.log(id);
     const channelId = await dbManager.DM.getChatChannel(id);
+    console.log(channelId);
     if (channelId) {
-      console.log(channelId);
-      const channel = await client.channels.fetch(channelId);
       console.log("test");
-      console.log(channel instanceof TextChannel);
+      const channel = await client.channels.fetch(channelId);
+      console.log("test2");
+      console.log(channel);
       if (channel && channel instanceof TextChannel) {
         const msg =
           `<@${id}> היי!\n\n` +
@@ -33,6 +34,7 @@ const sendExpiringMessage = withErrorHandling(async () => {
           `תודה רבה על הזמן וההשקעה,\n` +
           `צוות עוזימן`;
         await channel.send({ content: msg });
+        console.log("sent");
       }
     }
   }
