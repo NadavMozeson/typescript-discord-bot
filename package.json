@@ -16,6 +16,8 @@
     "axios": "^1.7.3",
     "canvas": "^3.0.1",
     "cheerio": "^1.0.0",
+    "country-flag-emoji": "^1.0.3",
+    "country-list": "^2.3.0",
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
     "mongodb": "^6.8.0",
@@ -28,6 +30,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@types/country-list": "^2.1.4",
     "@types/node": "^22.2.0",
     "@types/puppeteer": "^7.0.4",
     "@types/uuid": "^10.0.0",
