@@ -60,7 +60,7 @@ export const createNewInvestment = withErrorHandling(
       )}`;
       const content = await getPageContent(url);
       const $ = cheerio.load(content);
-      const results: { label: string; value: string }[] = [];
+      const results: { label: string; value: string; card: string }[] = [];
 
       const playerTable = $(
         "#content-container > div.extra-columns-wrapper.relative > div.players-table-wrapper.custom-scrollbar.overflow-x > table > tbody"
@@ -78,14 +78,15 @@ export const createNewInvestment = withErrorHandling(
         };
         if (player.url) {
           let label = `${player.name}(${player.rating}) ${player.price} | ${player.card}`;
-          if (label.length > 100) {
-            label = label.slice(0, 100 - 3) + "...";
-          }
-          results.push({ label: label, value: player.url });
+          if (label.length > 100) label = label.slice(0, 97) + "...";
+          const value = `${player.url}`;
+
+          results.push({ label, value, card: player.card });
         }
       });
       if (results.length > 0) {
-        const menusOptions: { label: string; value: string }[][] = [];
+        const menusOptions: { label: string; value: string; card: string }[][] =
+          [];
         for (let i = 0; i < results.length; i += 20) {
           menusOptions.push(results.slice(i, i + 20));
         }
@@ -104,6 +105,7 @@ export const createNewInvestment = withErrorHandling(
                       url: player.value,
                       risk: investmentRisk,
                       priceDiff: priceDifference,
+                      card: player.card,
                     })
                   )
               )
@@ -129,7 +131,7 @@ export const postNewInvestment = withErrorHandling(
       components: [],
     });
     let pageData = await getFutbinPlayerPageData(
-      "https://www.futbin.com" + paramsData.url
+      "https://www.futbin.com" + paramsData.url + "/market"
     );
     for (let i = 0; i < RETRIES; i++) {
       if (
@@ -143,7 +145,7 @@ export const postNewInvestment = withErrorHandling(
         break;
       }
       pageData = await getFutbinPlayerPageData(
-        "https://www.futbin.com" + paramsData.url
+        "https://www.futbin.com" + paramsData.url + "/market"
       );
     }
     if (pageData?.image) {
@@ -160,7 +162,7 @@ export const postNewInvestment = withErrorHandling(
       pageData.priceConsole &&
       pageData.name &&
       pageData.rating &&
-      pageData.card
+      (paramsData.card || pageData.card)
     ) {
       const flagEmoji = await countryNameToFlag(pageData.country);
       const pricePC =
@@ -206,7 +208,7 @@ export const postNewInvestment = withErrorHandling(
           "https://www.futbin.com" + paramsData.url,
           pageData.country,
           pageData.rating,
-          pageData.card,
+          paramsData.card || pageData.card,
           paramsData.risk,
           interaction.channelId,
           priceConsoleLabel,
@@ -244,14 +246,15 @@ export const sendInvestmentListPicker = withErrorHandling(
       MESSAGES_BUFFER[interaction.id.toString()] = messageInput;
     }
     const allInvestmentsData = await dbManager.Investments.getAllInvestment();
-    const result: { label: string; value: string }[] = [];
+    const result: { label: string; value: string; card: string }[] = [];
     for (const investment of allInvestmentsData) {
       result.push({
         label: `${investment.name}(${investment.rating}) - ${investment.version}`,
         value: investment._id.toString(),
+        card: investment.version,
       });
     }
-    const menusOptions: { label: string; value: string }[][] = [];
+    const menusOptions: { label: string; value: string; card: string }[][] = [];
     for (let i = 0; i < allInvestmentsData.length; i += 20) {
       menusOptions.push(result.slice(i, i + 20));
     }
@@ -267,6 +270,7 @@ export const sendInvestmentListPicker = withErrorHandling(
               JSON.stringify({
                 id: player.value,
                 interaction: interaction.id.toString(),
+                card: player.card,
               })
             )
           )
@@ -826,6 +830,7 @@ const addWatermarkToImage = withErrorHandling(
       console.log("Unable to retrieve image dimensions");
       return imageBuffer;
     } else if (width <= 600) {
+      console.log("Image is too small");
       return imageBuffer;
     }
 
@@ -833,8 +838,8 @@ const addWatermarkToImage = withErrorHandling(
       .composite([
         {
           input: watermarkImageBuffer,
-          left: 415,
-          top: 145,
+          left: 930,
+          top: 380,
           blend: "over",
         },
       ])

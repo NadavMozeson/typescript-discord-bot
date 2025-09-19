@@ -16,17 +16,25 @@ const USER_AGENT_STRING =
 const robustSelectors = {
   // Player data selectors with fallbacks
   playerName: [
-    ".playercard-25-name",
-    ".player-name",
-    '[class*="playercard"][class*="name"]',
-    '[class*="player"][class*="name"]',
+    // NEW (exact path you gave — highest priority)
+    "#comment-sidebar-mobile-drawer > div.comments-sidebar-drawer-title.flex.bold.space-between",
+
+    // NEW (robust fallbacks for the same area)
+    "#comment-sidebar-mobile-drawer .comments-sidebar-drawer-title",
+    '#comment-sidebar-mobile-drawer [class*="comments-sidebar-drawer-title"]',
+    "#comment-sidebar-drawer .comments-sidebar-drawer-title",
+    '[id*="comment-sidebar"][id*="drawer"] .comments-sidebar-drawer-title',
   ],
 
   playerRating: [
-    ".playercard-25-rating",
-    ".player-rating",
-    '[class*="playercard"][class*="rating"]',
-    '[class*="player"][class*="rating"]',
+    // NEW — exact path (highest priority)
+    "body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-page-player-header-section > div.player-header > div.player-header-card-section.full-height.minus-margin-top-16.relative.z-index-1 > div > div.player-card-wrapper > div > div.playercard-26.playercard-l > div.playercard-26-rating-pos-wrapper > div.playercard-26-rating",
+
+    // NEW — tight class-based fallbacks for EAFC 26 card
+    ".playercard-26-rating-pos-wrapper .playercard-26-rating",
+    ".playercard-26 .playercard-26-rating",
+    '[class*="playercard-26"] [class*="rating-pos-wrapper"] [class*="rating"]',
+    '[class*="playercard-26"] [class*="rating"]',
   ],
 
   // Player stats selectors
@@ -66,33 +74,44 @@ const robustSelectors = {
   clubImage: ['img[alt="Club"]', "img.playercard-25-club", '[class*="club"]'],
 
   pricePC: [
-    ".price-box.player-price-not-pc.price-box-original-player .price.lowest-price-1",
-    ".price-box.player-price-not-pc .price.lowest-price-1",
-    ".price-box-pc .price",
-    '[class*="price-box"][class*="pc"] [class*="price"]',
-    ".pc-price .price",
+    // NEW — exact path
+    "body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-page-player-header-section > div.player-header > div.player-header-prices-section.null > div.price-box.platform-pc-only.price-box-original-player > div.column > div.price.inline-with-icon.lowest-price-1",
+
+    // NEW — robust class-based
+    ".price-box.platform-pc-only.price-box-original-player .price.lowest-price-1",
+    ".price-box.platform-pc-only .price.lowest-price-1",
+    ".price-box.platform-pc-only .price",
+    '[class*="price-box"][class*="platform-pc-only"] [class*="price"]',
   ],
 
   priceConsole: [
-    ".price-box.player-price-not-ps.price-box-original-player .price.lowest-price-1",
-    ".price-box.player-price-not-ps .price.lowest-price-1",
-    ".price-box-ps .price",
-    '[class*="price-box"][class*="ps"] [class*="price"]',
-    ".ps-price .price",
+    // NEW — exact path
+    "body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-page-player-header-section > div.player-header > div.player-header-prices-section.null > div.price-box.platform-ps-only.price-box-original-player > div.column > div.price.inline-with-icon.lowest-price-1",
+
+    // NEW — robust class-based
+    ".price-box.platform-ps-only.price-box-original-player .price.lowest-price-1",
+    ".price-box.platform-ps-only .price.lowest-price-1",
+    ".price-box.platform-ps-only .price",
+    '[class*="price-box"][class*="platform-ps-only"] [class*="price"]',
   ],
 
   minPricePC: [
-    ".price-box.player-price-not-pc.price-box-original-player .price-pr",
-    ".price-box.player-price-not-pc .price-pr",
-    ".price-box-pc .min-price",
-    '[class*="price-box"][class*="pc"] [class*="price-pr"]',
+    // NEW — exact path
+    "body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-page-player-header-section > div.player-header > div.player-header-prices-section.null > div.price-box.platform-pc-only.price-box-original-player > div.price-box-full-width.xxs-column.full-width.overflow-hidden > div.column.centered.xxs-font > div:nth-child(2)",
+
+    // NEW — robust class-based
+    ".price-box.platform-pc-only.price-box-original-player .price-box-full-width .column.centered.xxs-font div:nth-child(2)",
+    ".price-box.platform-pc-only.price-box-original-player .price-pr",
   ],
 
   minPriceConsole: [
-    ".price-box.player-price-not-ps.price-box-original-player .price-pr",
-    ".price-box.player-price-not-ps .price-pr",
-    ".price-box-ps .min-price",
-    '[class*="price-box"][class*="ps"] [class*="price-pr"]',
+    // NEW — exact path
+    "body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-page-player-header-section > div.player-header > div.player-header-prices-section.null > div.price-box.platform-ps-only.price-box-original-player > div.price-box-full-width.xxs-column.full-width.overflow-hidden > div.column.centered.xxs-font > div:nth-child(2)",
+
+    // NEW — robust class-based
+    ".price-box.platform-ps-only.price-box-original-player .price-box-full-width .column.centered.xxs-font div:nth-child(2)",
+    ".price-box.platform-ps-only.price-box-original-player .price-pr",
+    ".price-box.platform-ps-only .price-pr",
   ],
 
   playerHeaderSection: [
@@ -106,6 +125,15 @@ const robustSelectors = {
     '[class*="evolution-toggle"]',
     '[class*="prices-updated"]',
     '[class*="price-box"] .small-row',
+    // NEW: player card options
+    "body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-page-player-header-section > div.player-header > div.player-header-card-section.full-height.minus-margin-top-16.relative.z-index-1 > div > div.player-card-wrapper.move-card-up.move-card-up-deactivated > div > div.playercard-options",
+    // robust fallback for same widget:
+    ".player-card-wrapper .playercard-options",
+
+    // NEW: latest sale widget (PS)
+    "body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-page-player-header-section > div.player-header > div.market-grid.platform-ps-only",
+    // robust fallback:
+    ".market-grid.platform-ps-only",
   ],
 };
 
@@ -518,6 +546,12 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (
 
   await page.setRequestInterception(true);
 
+  await page.setViewport({
+    width: 1920, // or 2560, 3000, etc.
+    height: 1200, // keep enough height for your element
+    deviceScaleFactor: 2, // bump to 2 for sharper
+  });
+
   page.on("request", (request) => {
     const url = request.url();
     if (url.includes("futbin") || url.includes("discordapp")) {
@@ -602,6 +636,41 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (
   const pcPriceData = await findPriceDataEnhanced(page, "pc");
   const consolePriceData = await findPriceDataEnhanced(page, "console");
 
+  await page.evaluate(() => {
+    document
+      .querySelectorAll<HTMLElement>('[class~="platform-pc-only"]')
+      .forEach((el) => el.classList.remove("platform-pc-only"));
+    document
+      .querySelectorAll<HTMLElement>('[class~="platform-ps-only"]')
+      .forEach((el) => el.classList.remove("platform-ps-only"));
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  const buttonSel =
+    "body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-page-player-header-section > div.player-header > div.player-header-prices-section.null > div:nth-child(2) > div.price-header > div.nav-item.dropdown-on-click.site-settings-wrapper.platform-price-box > button";
+
+  await page.evaluate((sel) => {
+    const btn = document.querySelector(sel);
+    if (!btn) return;
+
+    const kids = Array.from(btn.children).filter(
+      (n): n is HTMLElement => n instanceof HTMLElement
+    );
+
+    const psDiv = kids[0]; // first = PS
+    const pcDiv = kids[1]; // second = PC
+
+    if (psDiv) {
+      psDiv.classList.remove("show-not-ps-icon");
+      psDiv.classList.add("show-not-pc-icon");
+    }
+    if (pcDiv) {
+      pcDiv.classList.remove("show-not-pc-icon");
+      pcDiv.classList.add("show-not-ps-icon");
+    }
+  }, buttonSel);
+
   // Find main screenshot element
   const screenshotElement =
     (await page.$(robustSelectors.playerHeaderSection[0])) ||
@@ -612,12 +681,17 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (
     // Hide unnecessary elements
     await page.evaluate((selectors: string[]) => {
       selectors.forEach((selector) => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach((element) => {
-          (element as HTMLElement).style.display = "none";
+        document.querySelectorAll(selector).forEach((element) => {
+          element.remove(); // ⬅️ actually deletes the element from DOM
         });
       });
     }, robustSelectors.elementsToHide);
+
+    await page.evaluate(() => {
+      document
+        .querySelectorAll("i.fa.fa-caret-down")
+        .forEach((el) => el.remove());
+    });
 
     // Adjust layout for screenshot
     await page.evaluate(() => {
@@ -629,17 +703,24 @@ export const getFutbinPlayerPageData = withErrorHandling(async function (
       }
     });
 
-    const boundingBox = await screenshotElement.boundingBox();
+    const targetSelector =
+      "body > div.widthControl.mainPagePadding > div.player-page.medium-column.displaying-market-prices > div.player-page-player-header-section > div.player-header";
+
+    const targetElement = await page.$(targetSelector);
+    if (!targetElement) throw new Error("Target element not found");
+
+    const boundingBox = await targetElement.boundingBox();
 
     if (boundingBox) {
-      const marginBoundingBox = {
-        x: boundingBox.x - 20,
-        y: boundingBox.y - 10,
-        width: boundingBox.width,
-        height: boundingBox.height - 280,
+      const margin = 20; // adjust as needed
+      const clip = {
+        x: Math.max(0, boundingBox.x - margin),
+        y: Math.max(0, boundingBox.y - margin),
+        width: boundingBox.width - 520 + margin * 2,
+        height: boundingBox.height - 90 + margin * 2,
       };
       const imageBuffer = await page.screenshot({
-        clip: marginBoundingBox,
+        clip,
       });
       await browser.close();
       return {
