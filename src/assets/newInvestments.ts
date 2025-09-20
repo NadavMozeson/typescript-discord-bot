@@ -38,6 +38,7 @@ import sharp from "sharp";
 import { createCanvas, loadImage } from "canvas";
 import path from "path";
 import * as fs from "fs";
+import { ephemeralStore } from "../utils/ephemeralStore.js";
 
 const RETRIES = 5;
 let MESSAGES_BUFFER: { [key: string]: string } = {};
@@ -101,7 +102,8 @@ export const createNewInvestment = withErrorHandling(
                 new StringSelectMenuOptionBuilder()
                   .setLabel(player.label)
                   .setValue(
-                    JSON.stringify({
+                    ephemeralStore.set({
+                      type: "investment",
                       url: player.value,
                       risk: investmentRisk,
                       priceDiff: priceDifference,
@@ -125,7 +127,11 @@ export const createNewInvestment = withErrorHandling(
 
 export const postNewInvestment = withErrorHandling(
   async (interaction: StringSelectMenuInteraction) => {
-    const paramsData = JSON.parse(interaction.values[0]);
+    const paramsData = ephemeralStore.getAndDelete(interaction.values[0]);
+    if (!paramsData || paramsData.type !== "investment") {
+      await interaction.editReply({ content: "ההשקעה פגה" });
+      return;
+    }
     await interaction.update({
       content: `אנא המתן בזמן שאני יוצר את ההודעה של ההשקעה`,
       components: [],
@@ -208,7 +214,7 @@ export const postNewInvestment = withErrorHandling(
           "https://www.futbin.com" + paramsData.url,
           pageData.country,
           pageData.rating,
-          paramsData.card || pageData.card,
+          paramsData.card || pageData.card || "",
           paramsData.risk,
           interaction.channelId,
           priceConsoleLabel,
@@ -267,7 +273,8 @@ export const sendInvestmentListPicker = withErrorHandling(
         .addOptions(
           menusOptions[i].map((player) =>
             new StringSelectMenuOptionBuilder().setLabel(player.label).setValue(
-              JSON.stringify({
+              ephemeralStore.set({
+                type: "listPicker",
                 id: player.value,
                 interaction: interaction.id.toString(),
                 card: player.card,
@@ -290,7 +297,11 @@ export const postProfitMessage = withErrorHandling(
       content: `אנא המתן בזמן שאני יוצר את ההודעה של הרווחים`,
       components: [],
     });
-    const commandData = JSON.parse(interaction.values[0]);
+    const commandData = ephemeralStore.getAndDelete(interaction.values[0]);
+    if (!commandData || commandData.type !== "listPicker") {
+      await interaction.editReply({ content: "הבחירה פגה, נסה שוב." });
+      return;
+    }
     const investmentData = await dbManager.Investments.getInvestmentByID(
       commandData.id
     );
@@ -390,7 +401,11 @@ export const postFirstExitMessage = withErrorHandling(
       content: `אנא המתן בזמן שאני יוצר את ההודעה של יציאה ראשונה`,
       components: [],
     });
-    const commandData = JSON.parse(interaction.values[0]);
+    const commandData = ephemeralStore.getAndDelete(interaction.values[0]);
+    if (!commandData || commandData.type !== "listPicker") {
+      await interaction.editReply({ content: "הבחירה פגה, נסה שוב." });
+      return;
+    }
     const investmentData = await dbManager.Investments.getInvestmentByID(
       commandData.id
     );
@@ -451,7 +466,11 @@ export const postEarlyExitMessage = withErrorHandling(
       content: `אנא המתן בזמן שאני יוצר את ההודעה של יציאה מוקדמת`,
       components: [],
     });
-    const commandData = JSON.parse(interaction.values[0]);
+    const commandData = ephemeralStore.getAndDelete(interaction.values[0]);
+    if (!commandData || commandData.type !== "listPicker") {
+      await interaction.editReply({ content: "הבחירה פגה, נסה שוב." });
+      return;
+    }
     const investmentData = await dbManager.Investments.getInvestmentByID(
       commandData.id
     );
@@ -725,7 +744,11 @@ export const postNewTOTWInvestment = withErrorHandling(
 
 export const deleteInvestment = withErrorHandling(
   async (interaction: StringSelectMenuInteraction) => {
-    const commandData = JSON.parse(interaction.values[0]);
+    const commandData = ephemeralStore.getAndDelete(interaction.values[0]);
+    if (!commandData || commandData.type !== "listPicker") {
+      await interaction.editReply({ content: "הבחירה פגה, נסה שוב." });
+      return;
+    }
     const data = await dbManager.Investments.getInvestmentByID(commandData.id);
     if (data) {
       const buttonAdd = new ButtonBuilder()
