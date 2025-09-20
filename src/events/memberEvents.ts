@@ -65,6 +65,22 @@ export async function setupMemberEvents() {
       }
     )
   );
+
+  client.on(
+    "guildMemberUpdate",
+    withErrorHandling(
+      async (
+        oldMember: GuildMember | PartialGuildMember,
+        newMember: GuildMember
+      ) => {
+        // keep your existing timeout check
+        await checkIfTimeout(oldMember, newMember);
+
+        // handle VIP role add/remove => open/close private room
+        await checkVipRoleChange(oldMember, newMember);
+      }
+    )
+  );
 }
 
 const checkIfTimeout = withErrorHandling(
@@ -84,6 +100,39 @@ const checkIfTimeout = withErrorHandling(
           await memberTimeoutEmbed(newMember.guild, newMember);
         }
       }
+    }
+  }
+);
+
+const checkVipRoleChange = withErrorHandling(
+  async (
+    oldMember: GuildMember | PartialGuildMember,
+    newMember: GuildMember
+  ) => {
+    // Only act in the VIP server
+    if (newMember.guild.id !== config.VIP_SERVER.INFO.ServerId) return;
+
+    // Safely read role presence on old/new (old can be PartialGuildMember)
+    const oldHasVIP = !!(oldMember as GuildMember).roles?.cache?.has(
+      config.VIP_SERVER.ROLES.VIP
+    );
+    const newHasVIP = newMember.roles.cache.has(config.VIP_SERVER.ROLES.VIP);
+
+    const oldHasVIP2 = !!(oldMember as GuildMember).roles?.cache?.has(
+      config.VIP_SERVER.ROLES.VIP2
+    );
+    const newHasVIP2 = newMember.roles.cache.has(config.VIP_SERVER.ROLES.VIP2);
+
+    // VIP granted -> open (or ensure) private chat
+    if ((!oldHasVIP && newHasVIP) || (!oldHasVIP2 && newHasVIP2)) {
+      await createPrivateChat(newMember.user, true);
+      return;
+    }
+
+    // VIP removed -> close private chat
+    if ((oldHasVIP && !newHasVIP) || (oldHasVIP2 && !newHasVIP2)) {
+      await deletePrivateChat(newMember.user);
+      return;
     }
   }
 );

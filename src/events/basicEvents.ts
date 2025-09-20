@@ -4,6 +4,7 @@ import { setupAssets } from "../assets/loadAssets.js";
 import { setupSlashCommands } from "./slashCommands.js";
 import { updateStats } from "../assets/statsHandler.js";
 import { handleFAQMessage } from "../assets/FAQ.js";
+import { syncVipRoomsOnStartup } from "../assets/privateChats.js";
 
 export async function setupBasicEvents() {
   client.on(
@@ -22,4 +23,5 @@ const StartupFunctions = withErrorHandling(async () => {
   await setupAssets();
   await handleFAQMessage();
   updateStats();
+  await syncVipRoomsOnStartup();
 });
