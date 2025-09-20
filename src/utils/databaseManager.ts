@@ -174,6 +174,8 @@ interface Config {
     ROLES: {
       VIP: string;
       VIP2: string;
+      Support: string;
+      Manager: string;
     };
     CHANNELS: {
       FirstExit: string;

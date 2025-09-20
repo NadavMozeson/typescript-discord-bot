@@ -69,6 +69,20 @@ export const createPrivateChat = withErrorHandling(
                 PermissionsBitField.Flags.SendMessages,
               ],
             },
+            {
+              id: config.VIP_SERVER.ROLES.Support,
+              allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.SendMessages,
+              ],
+            },
+            {
+              id: config.VIP_SERVER.ROLES.Manager,
+              allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.SendMessages,
+              ],
+            },
           ],
         });
 
