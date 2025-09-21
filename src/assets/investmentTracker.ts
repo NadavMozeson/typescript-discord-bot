@@ -130,8 +130,10 @@ export const handelTrackerButtonClick = withErrorHandling(
     if (member) {
       if (
         member.guild.id === config.VIP_SERVER.INFO.ServerId &&
-        (!member.roles.cache.has(config.VIP_SERVER.ROLES.VIP) ||
-          !member.roles.cache.has(config.VIP_SERVER.ROLES.VIP2))
+        !(
+          member.roles.cache.has(config.VIP_SERVER.ROLES.VIP) ||
+          member.roles.cache.has(config.VIP_SERVER.ROLES.VIP2)
+        )
       ) {
         await interaction.reply({
           content: "️⚠️ רק לחברי מועדון יש גישה למעקב ⚠",
