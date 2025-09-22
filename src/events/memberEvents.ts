@@ -11,6 +11,7 @@ import {
   createPrivateChat,
   deletePrivateChat,
 } from "../assets/privateChats.js";
+import { dbManager } from "../utils/databaseManager.js";
 
 type GuildBanEvent = {
   user: { bot: boolean; id: string };
@@ -31,6 +32,24 @@ export async function setupMemberEvents() {
           throw new Error(
             "Failed to add member role to user " + member.displayName
           );
+        }
+      }
+
+      if (member.guild.id === config.VIP_SERVER.INFO.ServerId) {
+        const MAX_TRIES = 5;
+        const DELAY_MS = 1500;
+
+        for (let i = 0; i < MAX_TRIES; i++) {
+          const fresh = await member.fetch(true).catch(() => null);
+          if (
+            fresh &&
+            (fresh.roles.cache.has(config.VIP_SERVER.ROLES.VIP) ||
+              fresh.roles.cache.has(config.VIP_SERVER.ROLES.VIP2))
+          ) {
+            await ensureVipRoomForMember(fresh);
+            break;
+          }
+          await new Promise((res) => setTimeout(res, DELAY_MS));
         }
       }
     })
@@ -136,3 +155,25 @@ const checkVipRoleChange = withErrorHandling(
     }
   }
 );
+
+async function ensureVipRoomForMember(member: GuildMember) {
+  if (member.guild.id !== config.VIP_SERVER.INFO.ServerId) return;
+  if (
+    !member.roles.cache.has(config.VIP_SERVER.ROLES.VIP) &&
+    !member.roles.cache.has(config.VIP_SERVER.ROLES.VIP2)
+  )
+    return;
+
+  const exists = await dbManager.DM.checkIfChatExists(member.id);
+  if (!exists) {
+    await createPrivateChat(member.user, true);
+  } else {
+    const channelId = await dbManager.DM.getChatChannel(member.id);
+    if (channelId) {
+      const ch = await member.guild.channels.fetch(channelId).catch(() => null);
+      if (!ch) await createPrivateChat(member.user, true);
+    } else {
+      await createPrivateChat(member.user, true);
+    }
+  }
+}
